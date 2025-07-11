@@ -14,7 +14,7 @@ const providerOptions = {
 };
 
 const web3Modal = new Web3Modal({
-  network: process.env.REACT_APP_NETWORK || 'mainnet',
+  network: process.env.REACT_APP_NETWORK || 'arbitrum',
   cacheProvider: true,
   providerOptions
 });

@@ -5,27 +5,27 @@ import { useAppState } from '../../../contexts/AppContext';
 import { useNBGN } from '../../../hooks/useNBGN';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
-import { EURC_ABI } from '../../../contracts/abis/EURC';
+import { EURE_ABI } from '../../../contracts/abis/EURe';
 import environment from '../../../config/environment';
 import { useNBGNFormatter } from '../../../utils/formatters';
 
 export const NBGNExchange: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { web3, user } = useAppState();
   const { getContract, refresh: refreshNBGN } = useNBGN();
   const { executeTransaction, status, hash, error } = useTransaction();
   const formatNBGN = useNBGNFormatter();
   
-  const [eurcAmount, setEurcAmount] = useState('');
-  const [eurcBalance, setEurcBalance] = useState('0');
+  const [eureAmount, setEureAmount] = useState('');
+  const [eureBalance, setEureBalance] = useState('0');
   const [expectedNBGN, setExpectedNBGN] = useState('0');
   const [allowance, setAllowance] = useState('0');
   const [loading, setLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
 
-  // Format EURC with 2 decimals
-  const formatEURC = (value: string) => {
+  // Format EURe with 2 decimals
+  const formatEURe = (value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return '0,00';
     
@@ -35,53 +35,53 @@ export const NBGNExchange: React.FC = () => {
     });
   };
 
-  // Get EURC contract
-  const getEURCContract = async () => {
-    if (!web3.provider || !environment.eurcAddress) return null;
+  // Get EURe contract
+  const getEUReContract = async () => {
+    if (!web3.provider || !environment.eureAddress) return null;
     
     try {
       const signer = await web3.provider.getSigner();
-      return new ethers.Contract(environment.eurcAddress, EURC_ABI, signer);
+      return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
     } catch (error) {
-      console.error('Failed to get EURC contract:', error);
+      console.error('Failed to get EURe contract:', error);
       return null;
     }
   };
 
-  // Fetch EURC balance and allowance
+  // Fetch EURe balance and allowance
   useEffect(() => {
-    const fetchEURCData = async () => {
+    const fetchEUReData = async () => {
       if (!user.address || !web3.provider) return;
       
       try {
         setLoading(true);
-        const eurcContract = await getEURCContract();
+        const eureContract = await getEUReContract();
         const nbgnContract = await getContract();
         
-        if (!eurcContract || !nbgnContract) return;
+        if (!eureContract || !nbgnContract) return;
         
-        // Get EURC balance
-        const balance = await eurcContract.balanceOf(user.address);
-        const formattedBalance = ethers.formatUnits(balance, 6); // EURC has 6 decimals
-        setEurcBalance(formattedBalance);
+        // Get EURe balance
+        const balance = await eureContract.balanceOf(user.address);
+        const formattedBalance = ethers.formatUnits(balance, 18); // EURe has 18 decimals
+        setEureBalance(formattedBalance);
         
         // Get current allowance
-        const currentAllowance = await eurcContract.allowance(user.address, environment.contractAddress);
-        setAllowance(ethers.formatUnits(currentAllowance, 6));
+        const currentAllowance = await eureContract.allowance(user.address, environment.contractAddress);
+        setAllowance(ethers.formatUnits(currentAllowance, 18));
       } catch (error) {
-        console.error('Failed to fetch EURC data:', error);
+        console.error('Failed to fetch EURe data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEURCData();
+    fetchEUReData();
   }, [user.address, web3.provider]);
 
   // Calculate expected NBGN when amount changes
   useEffect(() => {
     const calculateExpected = async () => {
-      if (!eurcAmount || parseFloat(eurcAmount) <= 0) {
+      if (!eureAmount || parseFloat(eureAmount) <= 0) {
         setExpectedNBGN('0');
         return;
       }
@@ -90,8 +90,8 @@ export const NBGNExchange: React.FC = () => {
         const nbgnContract = await getContract();
         if (!nbgnContract) return;
         
-        const eurcAmountWei = ethers.parseUnits(eurcAmount, 6);
-        const expected = await nbgnContract.calculateNBGN(eurcAmountWei);
+        const eureAmountWei = ethers.parseUnits(eureAmount, 18);
+        const expected = await nbgnContract.calculateNBGN(eureAmountWei);
         setExpectedNBGN(ethers.formatUnits(expected, 18));
       } catch (error) {
         console.error('Failed to calculate expected NBGN:', error);
@@ -100,27 +100,27 @@ export const NBGNExchange: React.FC = () => {
     };
 
     calculateExpected();
-  }, [eurcAmount, getContract]);
+  }, [eureAmount, getContract]);
 
   const handleApprove = async () => {
-    if (!eurcAmount || parseFloat(eurcAmount) <= 0) return;
+    if (!eureAmount || parseFloat(eureAmount) <= 0) return;
     
     setIsApproving(true);
     
     try {
       await executeTransaction(async () => {
-        const eurcContract = await getEURCContract();
-        if (!eurcContract) throw new Error('EURC contract not available');
+        const eureContract = await getEUReContract();
+        if (!eureContract) throw new Error('EURe contract not available');
         
-        const amountWei = ethers.parseUnits(eurcAmount, 6);
-        return await eurcContract.approve(environment.contractAddress, amountWei);
+        const amountWei = ethers.parseUnits(eureAmount, 18);
+        return await eureContract.approve(environment.contractAddress, amountWei);
       });
       
       // Refresh allowance after approval
-      const eurcContract = await getEURCContract();
-      if (eurcContract) {
-        const newAllowance = await eurcContract.allowance(user.address, environment.contractAddress);
-        setAllowance(ethers.formatUnits(newAllowance, 6));
+      const eureContract = await getEUReContract();
+      if (eureContract) {
+        const newAllowance = await eureContract.allowance(user.address, environment.contractAddress);
+        setAllowance(ethers.formatUnits(newAllowance, 18));
       }
     } catch (err) {
       console.error('Approval failed:', err);
@@ -130,7 +130,7 @@ export const NBGNExchange: React.FC = () => {
   };
 
   const handleMint = async () => {
-    if (!eurcAmount || parseFloat(eurcAmount) <= 0) return;
+    if (!eureAmount || parseFloat(eureAmount) <= 0) return;
     
     setIsMinting(true);
     
@@ -139,22 +139,22 @@ export const NBGNExchange: React.FC = () => {
         const nbgnContract = await getContract();
         if (!nbgnContract) throw new Error('NBGN contract not available');
         
-        const amountWei = ethers.parseUnits(eurcAmount, 6);
+        const amountWei = ethers.parseUnits(eureAmount, 18);
         return await nbgnContract.mint(amountWei);
       });
       
       // Clear form and refresh balances on success
-      setEurcAmount('');
+      setEureAmount('');
       setExpectedNBGN('0');
       
       // Refresh balances
       await refreshNBGN();
       
-      // Refresh EURC balance
-      const eurcContract = await getEURCContract();
-      if (eurcContract) {
-        const balance = await eurcContract.balanceOf(user.address);
-        setEurcBalance(ethers.formatUnits(balance, 6));
+      // Refresh EURe balance
+      const eureContract = await getEUReContract();
+      if (eureContract) {
+        const balance = await eureContract.balanceOf(user.address);
+        setEureBalance(ethers.formatUnits(balance, 18));
       }
     } catch (err) {
       console.error('Minting failed:', err);
@@ -164,19 +164,19 @@ export const NBGNExchange: React.FC = () => {
   };
 
   const handleApproveAndMint = async () => {
-    if (!eurcAmount || parseFloat(eurcAmount) <= 0) return;
+    if (!eureAmount || parseFloat(eureAmount) <= 0) return;
     
     setIsMinting(true);
     setIsApproving(true);
     
     try {
-      // Step 1: Approve EURC
+      // Step 1: Approve EURe
       await executeTransaction(async () => {
-        const eurcContract = await getEURCContract();
-        if (!eurcContract) throw new Error('EURC contract not available');
+        const eureContract = await getEUReContract();
+        if (!eureContract) throw new Error('EURe contract not available');
         
-        const amountWei = ethers.parseUnits(eurcAmount, 6);
-        return await eurcContract.approve(environment.contractAddress, amountWei);
+        const amountWei = ethers.parseUnits(eureAmount, 18);
+        return await eureContract.approve(environment.contractAddress, amountWei);
       });
       
       // Wait a moment for approval to be confirmed
@@ -187,25 +187,25 @@ export const NBGNExchange: React.FC = () => {
         const nbgnContract = await getContract();
         if (!nbgnContract) throw new Error('NBGN contract not available');
         
-        const amountWei = ethers.parseUnits(eurcAmount, 6);
+        const amountWei = ethers.parseUnits(eureAmount, 18);
         return await nbgnContract.mint(amountWei);
       });
       
       // Clear form and refresh balances on success
-      setEurcAmount('');
+      setEureAmount('');
       setExpectedNBGN('0');
       
       // Refresh balances
       await refreshNBGN();
       
-      // Refresh EURC balance and allowance
-      const eurcContract = await getEURCContract();
-      if (eurcContract) {
-        const balance = await eurcContract.balanceOf(user.address);
-        setEurcBalance(ethers.formatUnits(balance, 6));
+      // Refresh EURe balance and allowance
+      const eureContract = await getEUReContract();
+      if (eureContract) {
+        const balance = await eureContract.balanceOf(user.address);
+        setEureBalance(ethers.formatUnits(balance, 18));
         
-        const newAllowance = await eurcContract.allowance(user.address, environment.contractAddress);
-        setAllowance(ethers.formatUnits(newAllowance, 6));
+        const newAllowance = await eureContract.allowance(user.address, environment.contractAddress);
+        setAllowance(ethers.formatUnits(newAllowance, 18));
       }
     } catch (err) {
       console.error('Approve and mint failed:', err);
@@ -215,14 +215,14 @@ export const NBGNExchange: React.FC = () => {
     }
   };
 
-  const needsApproval = parseFloat(allowance) < parseFloat(eurcAmount || '0');
+  const needsApproval = parseFloat(allowance) < parseFloat(eureAmount || '0');
 
   if (loading) {
     return (
       <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-lg">
         <h3 className="text-xl font-bold mb-4 text-gray-800">
           <i className="fas fa-exchange-alt mr-2 text-green-600"></i>
-          {t('web3:exchange.title', 'Buy NBGN with EURC')}
+          {t('web3:exchange.title', 'Buy NBGN with EURe')}
         </h3>
         <div className="loader-container">
           <div className="red-loader"></div>
@@ -237,14 +237,14 @@ export const NBGNExchange: React.FC = () => {
         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
           <i className="fas fa-exchange-alt text-blue-600"></i>
         </div>
-        {t('web3:exchange.title', 'Buy NBGN with EURC')}
+        {t('web3:exchange.title', 'Buy NBGN with EURe')}
       </h3>
 
       {/* EURC Balance Card */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 mb-6">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-blue-700">{t('web3:exchange.eurcBalance', 'EURC Balance')}</span>
-          <span className="text-xl font-bold text-blue-800"> - {formatEURC(eurcBalance)} €</span>
+          <span className="text-sm font-medium text-blue-700">{t('web3:exchange.eureBalance', 'EURe Balance')}</span>
+          <span className="text-xl font-bold text-blue-800"> - {formatEURe(eureBalance)} €</span>
         </div>
       </div>
 
@@ -253,19 +253,19 @@ export const NBGNExchange: React.FC = () => {
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <i className="fas fa-coins mr-2 text-blue-600"></i>
-            {t('web3:exchange.eurcAmount', 'EURC Amount')}
+            {t('web3:exchange.eureAmount', 'EURe Amount')}
           </label>
           <input
             type="number"
             step="0.01"
-            value={eurcAmount}
-            onChange={(e) => setEurcAmount(e.target.value)}
+            value={eureAmount}
+            onChange={(e) => setEureAmount(e.target.value)}
             placeholder="0.00"
             className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-lg font-medium transition-all"
           />
           <button
             type="button"
-            onClick={() => setEurcAmount(eurcBalance)}
+            onClick={() => setEureAmount(eureBalance)}
             className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             {t('web3:exchange.useMax', 'Use max')}
@@ -273,7 +273,7 @@ export const NBGNExchange: React.FC = () => {
         </div>
 
         {/* Conversion Arrow & Preview */}
-        {eurcAmount && parseFloat(eurcAmount) > 0 && (
+        {eureAmount && parseFloat(eureAmount) > 0 && (
           <div className="relative">
             <div className="flex justify-center mb-4">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -299,14 +299,14 @@ export const NBGNExchange: React.FC = () => {
           <button
             type="button"
             onClick={needsApproval ? handleApproveAndMint : handleMint}
-            disabled={(isApproving || isMinting) || !eurcAmount || parseFloat(eurcAmount) <= 0 || parseFloat(eurcAmount) > parseFloat(eurcBalance)}
+            disabled={(isApproving || isMinting) || !eureAmount || parseFloat(eureAmount) <= 0 || parseFloat(eureAmount) > parseFloat(eureBalance)}
             className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
           >
             {(isApproving || isMinting) ? (
               <span className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                 {isApproving && !isMinting ? 
-                  t('web3:exchange.approving', 'Approving EURC...') : 
+                  t('web3:exchange.approving', 'Approving EURe...') : 
                   t('web3:exchange.minting', 'Buying NBGN...')
                 }
               </span>
@@ -322,11 +322,11 @@ export const NBGNExchange: React.FC = () => {
           </button>
           
           {/* Insufficient Balance Warning */}
-          {eurcAmount && parseFloat(eurcAmount) > parseFloat(eurcBalance) && (
+          {eureAmount && parseFloat(eureAmount) > parseFloat(eureBalance) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm text-center font-medium">
                 <i className="fas fa-exclamation-triangle mr-2"></i>
-                {t('web3:exchange.insufficientBalance', 'Insufficient EURC balance')}
+                {t('web3:exchange.insufficientBalance', 'Insufficient EURe balance')}
               </p>
             </div>
           )}

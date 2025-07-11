@@ -23,7 +23,8 @@ REACT_APP_INFURA_ID=your-infura-project-id
 REACT_APP_ALCHEMY_KEY=your-alchemy-key
 REACT_APP_WALLETCONNECT_ID=your-walletconnect-id
 REACT_APP_CONTRACT_ADDRESS=0x...
-REACT_APP_NETWORK=mainnet
+REACT_APP_EURE_ADDRESS=0x...
+REACT_APP_NETWORK=arbitrum
 REACT_APP_API_URL=http://localhost:3001
 ```
 

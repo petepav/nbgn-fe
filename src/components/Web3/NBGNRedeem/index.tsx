@@ -5,7 +5,7 @@ import { useAppState } from '../../../contexts/AppContext';
 import { useNBGN } from '../../../hooks/useNBGN';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
-import { EURC_ABI } from '../../../contracts/abis/EURC';
+import { EURE_ABI } from '../../../contracts/abis/EURe';
 import environment from '../../../config/environment';
 import { useNBGNFormatter } from '../../../utils/formatters';
 
@@ -17,13 +17,13 @@ export const NBGNRedeem: React.FC = () => {
   const formatNBGN = useNBGNFormatter();
   
   const [nbgnAmount, setNbgnAmount] = useState('');
-  const [eurcBalance, setEurcBalance] = useState('0');
-  const [expectedEURC, setExpectedEURC] = useState('0');
+  const [eureBalance, setEureBalance] = useState('0');
+  const [expectedEURe, setExpectedEURe] = useState('0');
   const [loading, setLoading] = useState(true);
   const [isBurning, setIsBurning] = useState(false);
 
-  // Format EURC with 2 decimals
-  const formatEURC = (value: string) => {
+  // Format EURe with 2 decimals
+  const formatEURe = (value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return '0,00';
     
@@ -33,49 +33,49 @@ export const NBGNRedeem: React.FC = () => {
     });
   };
 
-  // Get EURC contract
-  const getEURCContract = async () => {
-    if (!web3.provider || !environment.eurcAddress) return null;
+  // Get EURe contract
+  const getEUReContract = async () => {
+    if (!web3.provider || !environment.eureAddress) return null;
     
     try {
       const signer = await web3.provider.getSigner();
-      return new ethers.Contract(environment.eurcAddress, EURC_ABI, signer);
+      return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
     } catch (error) {
-      console.error('Failed to get EURC contract:', error);
+      console.error('Failed to get EURe contract:', error);
       return null;
     }
   };
 
-  // Fetch EURC balance
+  // Fetch EURe balance
   useEffect(() => {
-    const fetchEURCBalance = async () => {
+    const fetchEUReBalance = async () => {
       if (!user.address || !web3.provider) return;
       
       try {
         setLoading(true);
-        const eurcContract = await getEURCContract();
+        const eureContract = await getEUReContract();
         
-        if (!eurcContract) return;
+        if (!eureContract) return;
         
-        // Get EURC balance
-        const balance = await eurcContract.balanceOf(user.address);
-        const formattedBalance = ethers.formatUnits(balance, 6); // EURC has 6 decimals
-        setEurcBalance(formattedBalance);
+        // Get EURe balance
+        const balance = await eureContract.balanceOf(user.address);
+        const formattedBalance = ethers.formatUnits(balance, 18); // EURe has 18 decimals
+        setEureBalance(formattedBalance);
       } catch (error) {
-        console.error('Failed to fetch EURC balance:', error);
+        console.error('Failed to fetch EURe balance:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEURCBalance();
+    fetchEUReBalance();
   }, [user.address, web3.provider]);
 
-  // Calculate expected EURC when amount changes
+  // Calculate expected EURe when amount changes
   useEffect(() => {
     const calculateExpected = async () => {
       if (!nbgnAmount || parseFloat(nbgnAmount) <= 0) {
-        setExpectedEURC('0');
+        setExpectedEURe('0');
         return;
       }
       
@@ -84,11 +84,11 @@ export const NBGNRedeem: React.FC = () => {
         if (!nbgnContract) return;
         
         const nbgnAmountWei = ethers.parseEther(nbgnAmount);
-        const expected = await nbgnContract.calculateEURC(nbgnAmountWei);
-        setExpectedEURC(ethers.formatUnits(expected, 6)); // EURC has 6 decimals
+        const expected = await nbgnContract.calculateEURe(nbgnAmountWei);
+        setExpectedEURe(ethers.formatUnits(expected, 18)); // EURe has 18 decimals
       } catch (error) {
-        console.error('Failed to calculate expected EURC:', error);
-        setExpectedEURC('0');
+        console.error('Failed to calculate expected EURe:', error);
+        setExpectedEURe('0');
       }
     };
 
@@ -111,16 +111,16 @@ export const NBGNRedeem: React.FC = () => {
       
       // Clear form and refresh balances on success
       setNbgnAmount('');
-      setExpectedEURC('0');
+      setExpectedEURe('0');
       
       // Refresh balances
       await refreshNBGN();
       
-      // Refresh EURC balance
-      const eurcContract = await getEURCContract();
-      if (eurcContract) {
-        const balance = await eurcContract.balanceOf(user.address);
-        setEurcBalance(ethers.formatUnits(balance, 6));
+      // Refresh EURe balance
+      const eureContract = await getEUReContract();
+      if (eureContract) {
+        const balance = await eureContract.balanceOf(user.address);
+        setEureBalance(ethers.formatUnits(balance, 18));
       }
     } catch (err) {
       console.error('Burning failed:', err);
@@ -134,7 +134,7 @@ export const NBGNRedeem: React.FC = () => {
       <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-lg">
         <h3 className="text-xl font-bold mb-4 text-gray-800">
           <i className="fas fa-fire mr-2 text-red-600"></i>
-          {t('web3:redeem.title', 'Sell NBGN for EURC')}
+          {t('web3:redeem.title', 'Sell NBGN for EURe')}
         </h3>
         <div className="loader-container">
           <div className="red-loader"></div>
@@ -149,7 +149,7 @@ export const NBGNRedeem: React.FC = () => {
         <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
           <i className="fas fa-fire text-red-600"></i>
         </div>
-        {t('web3:redeem.title', 'Sell NBGN for EURC')}
+        {t('web3:redeem.title', 'Sell NBGN for EURe')}
       </h3>
 
       {/* NBGN Balance Card */}
@@ -196,7 +196,7 @@ export const NBGNRedeem: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-blue-700 mb-1">{t('web3:redeem.willReceive', 'You will receive')}</p>
-                  <p className="text-2xl font-bold text-blue-800"> - {formatEURC(expectedEURC)} €</p>
+                  <p className="text-2xl font-bold text-blue-800"> - {formatEURe(expectedEURe)} €</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
                   <i className="fas fa-euro-sign text-blue-600 text-xl"></i>
