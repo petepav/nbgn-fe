@@ -163,6 +163,58 @@ export const NBGNExchange: React.FC = () => {
     }
   };
 
+  const handleApproveAndMint = async () => {
+    if (!eurcAmount || parseFloat(eurcAmount) <= 0) return;
+    
+    setIsMinting(true);
+    setIsApproving(true);
+    
+    try {
+      // Step 1: Approve EURC
+      await executeTransaction(async () => {
+        const eurcContract = await getEURCContract();
+        if (!eurcContract) throw new Error('EURC contract not available');
+        
+        const amountWei = ethers.parseUnits(eurcAmount, 6);
+        return await eurcContract.approve(environment.contractAddress, amountWei);
+      });
+      
+      // Wait a moment for approval to be confirmed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 2: Mint NBGN
+      await executeTransaction(async () => {
+        const nbgnContract = await getContract();
+        if (!nbgnContract) throw new Error('NBGN contract not available');
+        
+        const amountWei = ethers.parseUnits(eurcAmount, 6);
+        return await nbgnContract.mint(amountWei);
+      });
+      
+      // Clear form and refresh balances on success
+      setEurcAmount('');
+      setExpectedNBGN('0');
+      
+      // Refresh balances
+      await refreshNBGN();
+      
+      // Refresh EURC balance and allowance
+      const eurcContract = await getEURCContract();
+      if (eurcContract) {
+        const balance = await eurcContract.balanceOf(user.address);
+        setEurcBalance(ethers.formatUnits(balance, 6));
+        
+        const newAllowance = await eurcContract.allowance(user.address, environment.contractAddress);
+        setAllowance(ethers.formatUnits(newAllowance, 6));
+      }
+    } catch (err) {
+      console.error('Approve and mint failed:', err);
+    } finally {
+      setIsMinting(false);
+      setIsApproving(false);
+    }
+  };
+
   const needsApproval = parseFloat(allowance) < parseFloat(eurcAmount || '0');
 
   if (loading) {
@@ -242,47 +294,32 @@ export const NBGNExchange: React.FC = () => {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         <div className="space-y-4 pt-2">
-          {needsApproval ? (
-            <button
-              type="button"
-              onClick={handleApprove}
-              disabled={isApproving || !eurcAmount || parseFloat(eurcAmount) <= 0 || parseFloat(eurcAmount) > parseFloat(eurcBalance)}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
-            >
-              {isApproving ? (
-                <span className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  {t('web3:exchange.approving', 'Approving...')}
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-check mr-3"></i>
-                  {t('web3:exchange.approve', 'Approve EURC')}
-                </span>
-              )}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleMint}
-              disabled={isMinting || !eurcAmount || parseFloat(eurcAmount) <= 0 || parseFloat(eurcAmount) > parseFloat(eurcBalance)}
-              className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
-            >
-              {isMinting ? (
-                <span className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  {t('web3:exchange.minting', 'Buying NBGN...')}
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-coins mr-3"></i>
-                  {t('web3:exchange.mint', 'Buy NBGN')}
-                </span>
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={needsApproval ? handleApproveAndMint : handleMint}
+            disabled={(isApproving || isMinting) || !eurcAmount || parseFloat(eurcAmount) <= 0 || parseFloat(eurcAmount) > parseFloat(eurcBalance)}
+            className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          >
+            {(isApproving || isMinting) ? (
+              <span className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                {isApproving && !isMinting ? 
+                  t('web3:exchange.approving', 'Approving EURC...') : 
+                  t('web3:exchange.minting', 'Buying NBGN...')
+                }
+              </span>
+            ) : (
+              <span className="flex items-center justify-center">
+                <i className="fas fa-coins mr-3"></i>
+                {needsApproval ? 
+                  t('web3:exchange.approveAndMint', 'Approve & Buy NBGN') : 
+                  t('web3:exchange.mint', 'Buy NBGN')
+                }
+              </span>
+            )}
+          </button>
           
           {/* Insufficient Balance Warning */}
           {eurcAmount && parseFloat(eurcAmount) > parseFloat(eurcBalance) && (
