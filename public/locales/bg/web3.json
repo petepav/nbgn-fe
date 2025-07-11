@@ -1,0 +1,50 @@
+{
+  "wallet": {
+    "connect": "Свържи портфейл",
+    "connecting": "Свързва се...",
+    "connected": "Портфейлът е свързан",
+    "disconnect": "Прекъсни връзката",
+    "error": "Неуспешно свързване на портфейла"
+  },
+  "transaction": {
+    "pending": "Транзакцията е в изчакване...",
+    "confirmed": "Транзакцията е потвърдена",
+    "failed": "Транзакцията е неуспешна",
+    "gasEstimate": "Прогнозен газ: {{amount}} ETH",
+    "history": "История на транзакциите",
+    "send": "Изпрати NBGN",
+    "historyShort": "История",
+    "noHistory": "Все още няма транзакции",
+    "sent": "Изпратени",
+    "received": "Получени",
+    "minted": "Купени",
+    "sold": "Продадени"
+  },
+  "recipient": "Адрес на получателя",
+  "amount": "Сума",
+  "exchange": {
+    "title": "Купи лев (с евро)",
+    "shortTitle": "Купи",
+    "eurcBalance": "EURC Баланс",
+    "eurcAmount": "EURC Сума",
+    "willReceive": "Ще получите",
+    "approve": "Одобри EURC",
+    "approving": "Одобрява се...",
+    "mint": "Купи NBGN",
+    "minting": "Купува се NBGN...",
+    "insufficientBalance": "Недостатъчен EURC баланс",
+    "useMax": "Максимум"
+  },
+  "redeem": {
+    "title": "Продай лев (за евро)",
+    "shortTitle": "Продай",
+    "nbgnBalance": "NBGN Баланс",
+    "eurcBalance": "EURC Баланс",
+    "nbgnAmount": "NBGN Сума за продажба",
+    "willReceive": "Ще получите",
+    "burn": "Продай NBGN",
+    "burning": "Продава се NBGN...",
+    "insufficientBalance": "Недостатъчен NBGN баланс",
+    "useMax": "Продай всички"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "wallet": {
+    "connect": "Connect Wallet",
+    "connecting": "Connecting...",
+    "connected": "Wallet Connected",
+    "disconnect": "Disconnect",
+    "error": "Failed to connect wallet"
+  },
+  "transaction": {
+    "pending": "Transaction pending...",
+    "confirmed": "Transaction confirmed",
+    "failed": "Transaction failed",
+    "gasEstimate": "Estimated gas: {{amount}} ETH",
+    "history": "Transaction History",
+    "send": "Send NBGN",
+    "historyShort": "History",
+    "noHistory": "No transactions yet",
+    "sent": "Sent",
+    "received": "Received",
+    "minted": "Minted",
+    "sold": "Sold"
+  },
+  "recipient": "Recipient Address",
+  "amount": "Amount",
+  "exchange": {
+    "title": "Buy NBGN with EURC",
+    "shortTitle": "Buy",
+    "eurcBalance": "EURC Balance",
+    "eurcAmount": "EURC Amount",
+    "willReceive": "You will receive",
+    "approve": "Approve EURC",
+    "approving": "Approving...",
+    "mint": "Buy NBGN",
+    "minting": "Buying NBGN...",
+    "insufficientBalance": "Insufficient EURC balance",
+    "useMax": "Use max"
+  },
+  "redeem": {
+    "title": "Sell NBGN for EURC",
+    "shortTitle": "Sell",
+    "nbgnBalance": "NBGN Balance",
+    "eurcBalance": "EURC Balance",
+    "nbgnAmount": "NBGN Amount to Sell",
+    "willReceive": "You will receive",
+    "burn": "Sell NBGN",
+    "burning": "Selling NBGN...",
+    "insufficientBalance": "Insufficient NBGN balance",
+    "useMax": "Sell all"
+  }
+}

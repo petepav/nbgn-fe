@@ -1,10 +1,33 @@
-# Getting Started with Create React App
+# Production-Ready React Web3 App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A complete implementation of a production-ready React Web3 application with TypeScript, ethers.js, multi-language support, and Vercel deployment setup.
+
+## Features
+
+- ✅ **TypeScript Support** - Full type safety for Web3 interactions
+- ✅ **Web3 Integration** - ethers.js with WalletConnect support
+- ✅ **Multi-language Support** - i18n with English, Spanish, and Chinese
+- ✅ **State Management** - React Context API with performance optimizations
+- ✅ **Smart Contract Hooks** - Reusable hooks for contract interactions
+- ✅ **Transaction Management** - Complete transaction lifecycle handling
+- ✅ **Vercel Deployment** - Production-ready deployment configuration
+- ✅ **CI/CD Pipeline** - GitHub Actions for automated testing and deployment
+- ✅ **Code Quality** - ESLint, Prettier, and pre-commit hooks
+- ✅ **Testing Setup** - Jest with Web3 mocking
+
+## Environment Setup
+
+1. Copy `.env.local` and update with your values:
+```bash
+REACT_APP_INFURA_ID=your-infura-project-id
+REACT_APP_ALCHEMY_KEY=your-alchemy-key
+REACT_APP_WALLETCONNECT_ID=your-walletconnect-id
+REACT_APP_CONTRACT_ADDRESS=0x...
+REACT_APP_NETWORK=mainnet
+REACT_APP_API_URL=http://localhost:3001
+```
 
 ## Available Scripts
-
-In the project directory, you can run:
 
 ### `npm start`
 
@@ -16,18 +39,23 @@ You will also see any lint errors in the console.
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in the interactive watch mode.
+
+### `npm run test:ci`
+
+Runs tests in CI mode (no watch, passes with no tests).
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Builds the app for production to the `build` folder.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### `npm run lint`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Runs ESLint on the source code.
+
+### `npm run format`
+
+Formats code with Prettier.
 
 ### `npm run eject`
 

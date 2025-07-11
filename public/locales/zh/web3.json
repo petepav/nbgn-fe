@@ -1,0 +1,16 @@
+{
+  "wallet": {
+    "connect": "连接钱包",
+    "connecting": "连接中...",
+    "connected": "钱包已连接",
+    "disconnect": "断开连接",
+    "error": "连接钱包失败"
+  },
+  "transaction": {
+    "pending": "交易待处理...",
+    "confirmed": "交易已确认",
+    "failed": "交易失败",
+    "gasEstimate": "预估 gas: {{amount}} ETH",
+    "history": "交易历史"
+  }
+}
