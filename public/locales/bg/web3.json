@@ -32,6 +32,7 @@
     "approving": "Одобрява се...",
     "mint": "Купи NBGN",
     "minting": "Купува се NBGN...",
+    "approveAndMint": "Одобри & купи NBGN",
     "insufficientBalance": "Недостатъчен EURC баланс",
     "useMax": "Максимум"
   },
