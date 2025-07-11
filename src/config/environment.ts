@@ -20,4 +20,7 @@ const config = {
 };
 
 const envKey = process.env.VERCEL_ENV || 'development';
+console.log('Environment key:', envKey);
+console.log('Contract address being used:', config[envKey as keyof typeof config].contractAddress);
+console.log('EURe address being used:', config[envKey as keyof typeof config].eureAddress);
 export default config[envKey as keyof typeof config];
