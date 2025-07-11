@@ -10,7 +10,7 @@ import environment from '../../../config/environment';
 import { useNBGNFormatter } from '../../../utils/formatters';
 
 export const NBGNRedeem: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { web3, user } = useAppState();
   const { getContract, refresh: refreshNBGN, rawBalance: nbgnBalance, formattedBalance } = useNBGN();
   const { executeTransaction, status, hash, error } = useTransaction();
@@ -106,7 +106,7 @@ export const NBGNRedeem: React.FC = () => {
         if (!nbgnContract) throw new Error('NBGN contract not available');
         
         const amountWei = ethers.parseEther(nbgnAmount);
-        return await nbgnContract.burn(amountWei);
+        return await nbgnContract.redeem(amountWei);
       });
       
       // Clear form and refresh balances on success

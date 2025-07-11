@@ -17,7 +17,7 @@ export const NBGN_ABI = [
   
   // NBGN Specific Functions
   "function mint(uint256 _eurcAmount) returns (uint256)",
-  "function burn(uint256 _nbgnAmount) returns (uint256)",
+  "function redeem(uint256 _nbgnAmount) returns (uint256)",
   "function calculateNBGN(uint256 _eurcAmount) pure returns (uint256)",
   "function calculateEURC(uint256 _nbgnAmount) pure returns (uint256)"
 ] as const;
