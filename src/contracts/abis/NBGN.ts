@@ -16,10 +16,10 @@ export const NBGN_ABI = [
   "event Approval(address indexed owner, address indexed spender, uint256 value)",
   
   // NBGN Specific Functions
-  "function mint(uint256 _eurcAmount) returns (uint256)",
+  "function mint(uint256 _eureAmount) returns (uint256)",
   "function redeem(uint256 _nbgnAmount) returns (uint256)",
-  "function calculateNBGN(uint256 _eurcAmount) pure returns (uint256)",
-  "function calculateEURC(uint256 _nbgnAmount) pure returns (uint256)"
+  "function calculateNBGN(uint256 _eureAmount) pure returns (uint256)",
+  "function calculateEURe(uint256 _nbgnAmount) pure returns (uint256)"
 ] as const;
 
 export default NBGN_ABI;
