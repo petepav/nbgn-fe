@@ -14,7 +14,7 @@ const config = {
   production: {
     apiUrl: process.env.REACT_APP_API_URL || 'https://api.example.com',
     network: 'arbitrum',
-    contractAddress: process.env.REACT_APP_CONTRACT_ADDRESS || '0xF5834Af69E2772604132f796f6ee08fd0f83C28a',
+    contractAddress: '0xF5834Af69E2772604132f796f6ee08fd0f83C28a',
     eureAddress: '0x0c06cCF38114ddfc35e07427B9424adcca9F44F8',
   }
 };
