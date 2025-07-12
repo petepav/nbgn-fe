@@ -10,6 +10,7 @@ export const WalletConnect: React.FC = () => {
   const { formattedBalance, loading: nbgnLoading, refresh } = useNBGN();
   const { user } = useAppState();
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Copy address to clipboard
   const copyAddress = async () => {
@@ -70,11 +71,14 @@ export const WalletConnect: React.FC = () => {
               <p className="address text-sm font-mono">{user.address.substring(0, 6)}...{user.address.substring(38)}</p>
               <button
                 onClick={copyAddress}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm ${
-                  copiedAddress
-                    ? 'bg-green-50 border-green-200 text-green-700 shadow-green-100' 
-                    : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200 hover:border-gray-400 hover:shadow-md'
-                }`}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm"
+                style={{
+                  backgroundColor: copiedAddress ? '#f0fdf4' : (isHovered ? '#e5e7eb' : '#f3f4f6'),
+                  borderColor: copiedAddress ? '#bbf7d0' : (isHovered ? '#9ca3af' : '#d1d5db'),
+                  color: copiedAddress ? '#15803d' : '#374151'
+                }}
                 title={copiedAddress ? 'Copied!' : 'Copy address'}
               >
                 <i className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-2`}></i>
