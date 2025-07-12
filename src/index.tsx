@@ -4,6 +4,10 @@ import './index.css';
 import './i18n/config';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { initializeEruda } from './utils/eruda';
+
+// Initialize Eruda for mobile debugging if conditions are met
+initializeEruda();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

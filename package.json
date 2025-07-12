@@ -13,6 +13,7 @@
     "@types/react-dom": "^19.1.6",
     "@types/react-router-dom": "^5.3.3",
     "@walletconnect/web3-provider": "^1.8.0",
+    "eruda": "^3.4.3",
     "ethers": "^6.15.0",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",
