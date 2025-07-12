@@ -5,6 +5,12 @@
   "outputDirectory": "build",
   "cleanUrls": true,
   "trailingSlash": false,
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "dev": true
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

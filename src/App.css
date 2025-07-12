@@ -31,11 +31,14 @@ body {
 .App {
   text-align: center;
   color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .App-header {
   background: var(--bg-white);
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -403,6 +406,41 @@ button {
   100% { transform: rotate(360deg); }
 }
 
+/* Disclaimer Footer */
+.disclaimer-footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 3px solid var(--bg-green);
+  padding: 32px 20px;
+  margin-top: auto;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.disclaimer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.disclaimer-content h3 {
+  color: var(--bg-green);
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.disclaimer-content p {
+  margin-bottom: 16px;
+  text-align: justify;
+  opacity: 0.9;
+}
+
+.disclaimer-content p:last-child {
+  margin-bottom: 0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .App-header {
@@ -429,5 +467,19 @@ button {
   .nbgn-transfer {
     padding: 16px;
     margin-top: 16px;
+  }
+  
+  .disclaimer-footer {
+    padding: 24px 16px;
+    font-size: 13px;
+  }
+  
+  .disclaimer-content h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .disclaimer-content p {
+    margin-bottom: 12px;
   }
 }
