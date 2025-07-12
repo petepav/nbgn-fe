@@ -1,5 +1,8 @@
 # NBGN Frontend - Production-Ready React Web3 App
 
+Discord server chat
+https://discord.gg/PQpW9CXDYp
+
 A complete implementation of a production-ready React Web3 application with TypeScript, ethers.js, multi-language support, and Vercel deployment setup.
 
 ## Features
