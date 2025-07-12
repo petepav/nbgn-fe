@@ -120,7 +120,13 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
               
               if (eureTransfer && 'args' in eureTransfer && Array.isArray(eureTransfer.args)) {
                 const eureArgs = eureTransfer.args as string[];
-                tx.eureAmount = ethers.formatUnits(eureArgs[2], 18);
+                const eureAmount = ethers.formatUnits(eureArgs[2], 18);
+                
+                // For minted transactions, user pays EURe (from user to contract)
+                // For sold transactions, user receives EURe (from contract to user)
+                if (tx.type === 'minted' || tx.type === 'sold') {
+                  tx.eureAmount = eureAmount;
+                }
               }
             }
           } catch {
@@ -458,7 +464,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600 flex items-center">
                         <i className="fas fa-euro-sign mr-2 text-blue-600"></i>
-                        {tx.type === 'minted' ? 'EURe Spent:' : 'EURe Received:'}
+                        {tx.type === 'minted' ? 'EURe Paid:' : tx.type === 'sold' ? 'EURe Received:' : 'EURe Amount:'}
                       </span>
                       <span className="font-semibold text-blue-700">
                         {formatEURe(tx.eureAmount)}
