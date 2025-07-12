@@ -111,7 +111,7 @@ export const WalletConnect: React.FC = () => {
                 <i
                   className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-2`}
                 ></i>
-                {copiedAddress ? 'Copied!' : 'Copy'}
+                {copiedAddress ? 'Copied!' : 'Копирай'}
               </button>
             </div>
             <p className="balance">{formattedBalance}</p>

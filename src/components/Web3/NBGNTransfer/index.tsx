@@ -155,7 +155,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               title="Scan QR Code"
             >
               <i className="fas fa-qrcode mr-1"></i>
-              Scan
+              Сканирай QR код
             </button>
           </div>
         </div>
