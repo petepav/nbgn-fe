@@ -12,8 +12,13 @@ const isMobileDevice = (): boolean => {
   // eslint-disable-next-line no-undef
   const screenWidth = window.innerWidth;
 
+  // Also check if the browser is in responsive design mode
+  // eslint-disable-next-line no-undef
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   return (
     screenWidth <= 768 ||
+    hasTouch ||
     /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
   );
 };
@@ -24,9 +29,17 @@ const shouldLoadEruda = (): boolean => {
 };
 
 export const initializeEruda = async (): Promise<void> => {
+  // eslint-disable-next-line no-console, no-undef
+  console.log('🔍 Checking if Eruda should load...');
+
   if (!shouldLoadEruda()) {
+    // eslint-disable-next-line no-console, no-undef
+    console.log('❌ Eruda will not load');
     return;
   }
+
+  // eslint-disable-next-line no-console, no-undef
+  console.log('✅ Eruda will load');
 
   try {
     // Import Eruda dynamically to avoid loading it unnecessarily
@@ -46,7 +59,12 @@ export const initializeEruda = async (): Promise<void> => {
         'snippets',
         'sources',
       ],
+      autoScale: false,
+      useShadowDom: true,
     });
+
+    // Make sure Eruda doesn't auto-open
+    eruda.default.hide();
 
     // Add some styling to make the entry button more visible
     // eslint-disable-next-line no-undef
