@@ -441,6 +441,26 @@ button {
   text-decoration: underline;
 }
 
+.link-separator {
+  color: var(--text-secondary);
+  margin: 0 4px;
+}
+
+/* Version Info */
+.version-info {
+  background: var(--bg-white);
+  border-top: 1px solid var(--border-light);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.version-text {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
 /* Disclaimer Page */
 .disclaimer-page {
   min-height: 100vh;
@@ -608,5 +628,235 @@ button {
   
   .disclaimer-section h2 {
     font-size: 18px;
+  }
+}
+
+/* Info Page */
+.info-page {
+  min-height: 100vh;
+  background: var(--bg-white);
+  color: var(--text-primary);
+  padding: 40px 20px;
+}
+
+.info-header {
+  max-width: 900px;
+  margin: 0 auto 40px auto;
+}
+
+.info-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.info-content h1 {
+  color: var(--bg-green);
+  font-size: 32px;
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: 700;
+  border-bottom: 3px solid var(--bg-green);
+  padding-bottom: 20px;
+}
+
+.info-section {
+  margin-bottom: 40px;
+}
+
+.info-section h2 {
+  color: var(--bg-green);
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  border-left: 4px solid var(--bg-green);
+  padding-left: 15px;
+}
+
+.info-card {
+  background: var(--bg-white);
+  border: 2px solid var(--border-light);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px var(--shadow-light);
+}
+
+.info-card p {
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.info-card ul {
+  margin: 16px 0;
+  padding-left: 20px;
+}
+
+.info-card li {
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+/* Guide Section */
+.guide-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid var(--bg-green);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 8px 24px var(--shadow-medium);
+}
+
+.guide-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.guide-intro h3 {
+  color: var(--bg-green);
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.guide-steps {
+  margin: 32px 0;
+}
+
+.guide-step {
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.guide-step h4 {
+  color: var(--bg-green);
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.guide-step p {
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.guide-step ul {
+  margin: 12px 0 0 20px;
+}
+
+.guide-step li {
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.contract-address {
+  background: #f8f9fa;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: var(--bg-green);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.security-tips {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.security-tips h3 {
+  color: #856404;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.security-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.security-tips li {
+  color: #856404;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.guide-footer {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-light);
+}
+
+.guide-footer p {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+/* Contact Links */
+.contact-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-green);
+  color: var(--text-white);
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+  background: var(--bg-green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-green);
+  color: var(--text-white);
+}
+
+/* Responsive design for info page */
+@media (max-width: 768px) {
+  .info-page {
+    padding: 20px 16px;
+  }
+  
+  .info-content h1 {
+    font-size: 26px;
+    margin-bottom: 32px;
+  }
+  
+  .info-section h2 {
+    font-size: 20px;
+  }
+  
+  .info-card {
+    padding: 20px;
+  }
+  
+  .guide-section {
+    padding: 24px 20px;
+  }
+  
+  .guide-step {
+    padding: 16px;
+  }
+  
+  .contact-links {
+    flex-direction: column;
+  }
+  
+  .contact-link {
+    justify-content: center;
   }
 }

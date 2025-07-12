@@ -6,6 +6,7 @@ import { NBGNExchange } from './Web3/NBGNExchange';
 import { NBGNRedeem } from './Web3/NBGNRedeem';
 import { TransactionHistory } from './Web3/TransactionHistory';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { VersionInfo } from './VersionInfo';
 import { useAppState } from '../contexts/AppContext';
 
 export const AppContent: React.FC = () => {
@@ -86,13 +87,19 @@ export const AppContent: React.FC = () => {
         )}
       </header>
 
+      <VersionInfo />
+
       <footer className="disclaimer-footer">
         <div className="disclaimer-content">
           <p className="disclaimer-short">
             ⚠️ nbgn е частен токен, няма връзка с БНБ или официалната валута.
             Участието е изцяло на собствен риск.
+            <a href="/info" className="disclaimer-link">
+              Информация и гид 📖
+            </a>
+            <span className="link-separator"> • </span>
             <a href="/disclaimer" className="disclaimer-link">
-              Виж пълния дисклеймър тук. 🔗
+              Пълен дисклеймър 🔗
             </a>
           </p>
         </div>
