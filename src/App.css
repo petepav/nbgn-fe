@@ -146,6 +146,57 @@ body {
   text-decoration: none;
 }
 
+/* Mobile Warning */
+.mobile-warning {
+  margin: 20px auto;
+  max-width: 500px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 2px solid #ffc107;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(255, 193, 7, 0.2);
+}
+
+.mobile-warning-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.mobile-warning-content i {
+  color: #856404;
+  font-size: 24px;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.mobile-warning-text {
+  flex: 1;
+}
+
+.mobile-warning-text strong {
+  color: #856404;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mobile-warning-text p {
+  color: #856404;
+  margin: 8px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.mobile-warning-steps {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .wallet-connect {
   margin-top: 2rem;
 }

@@ -7,6 +7,7 @@ import { NBGNRedeem } from './Web3/NBGNRedeem';
 import { TransactionHistory } from './Web3/TransactionHistory';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
+import { MobileWarning } from './MobileWarning';
 import { useAppState } from '../contexts/AppContext';
 
 export const AppContent: React.FC = () => {
@@ -30,6 +31,8 @@ export const AppContent: React.FC = () => {
             Информация и упътване 📖
           </a>
         </div>
+
+        <MobileWarning />
 
         <WalletConnect />
 
