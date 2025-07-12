@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 export const MobileWarning: React.FC = () => {
   const [showWarning, setShowWarning] = useState(false);
+  // eslint-disable-next-line no-undef
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -60,7 +62,7 @@ export const MobileWarning: React.FC = () => {
             <br />
             2. Натиснете иконата за браузър (долу в средата)
             <br />
-            3. Въведете адреса на сайта
+            3. Въведете адреса на сайта - {currentUrl}
           </p>
         </div>
       </div>
