@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ethers, BrowserProvider } from 'ethers';
+import { BrowserProvider } from 'ethers';
 import Web3Modal from 'web3modal';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import { useAppDispatch } from '../contexts/AppContext';
@@ -8,12 +8,14 @@ const providerOptions = {
   walletconnect: {
     package: WalletConnectProvider,
     options: {
+      // eslint-disable-next-line no-undef
       infuraId: process.env.REACT_APP_INFURA_ID
     }
   }
 };
 
 const web3Modal = new Web3Modal({
+  // eslint-disable-next-line no-undef
   network: process.env.REACT_APP_NETWORK || 'arbitrum',
   cacheProvider: true,
   providerOptions
@@ -23,8 +25,27 @@ export const useWeb3 = () => {
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rawProvider, setRawProvider] = useState<any>(null);
   const dispatch = useAppDispatch();
+
+  const handleAccountsChanged = useCallback((accounts: string[]) => {
+    if (accounts.length === 0) {
+      // Clear local state when accounts are disconnected
+      web3Modal.clearCachedProvider();
+      setProvider(null);
+      setAccount(null);
+      setRawProvider(null);
+      dispatch({ type: 'DISCONNECT' });
+    } else {
+      setAccount(accounts[0]);
+    }
+  }, [dispatch]);
+
+  const handleChainChanged = useCallback(() => {
+    // eslint-disable-next-line no-undef
+    window.location.reload();
+  }, []);
 
   const connectWallet = useCallback(async () => {
     setLoading(true);
@@ -56,11 +77,12 @@ export const useWeb3 = () => {
       connection.on("chainChanged", handleChainChanged);
       
     } catch (error) {
+      // eslint-disable-next-line no-console, no-undef
       console.error('Connection failed:', error);
     } finally {
       setLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, handleAccountsChanged, handleChainChanged]);
 
   const disconnectWallet = useCallback(async () => {
     try {
@@ -80,16 +102,6 @@ export const useWeb3 = () => {
         if (rawProvider.removeAllListeners) {
           rawProvider.removeAllListeners();
         }
-        
-        // For MetaMask and other providers, remove event listeners manually
-        try {
-          if (rawProvider.removeListener) {
-            rawProvider.removeListener("accountsChanged", handleAccountsChanged);
-            rawProvider.removeListener("chainChanged", handleChainChanged);
-          }
-        } catch {
-          // Silent fail for providers that don't support removeListener
-        }
       }
       
       // Clear Web3Modal cache
@@ -104,7 +116,7 @@ export const useWeb3 = () => {
       dispatch({ type: 'DISCONNECT' });
       
     } catch (error) {
-      // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console, no-undef
       console.warn('Error during disconnect:', error);
       
       // Still proceed with state cleanup even if provider disconnect fails
@@ -114,24 +126,7 @@ export const useWeb3 = () => {
       setRawProvider(null);
       dispatch({ type: 'DISCONNECT' });
     }
-  }, [dispatch, rawProvider, handleAccountsChanged, handleChainChanged]);
-
-  const handleAccountsChanged = useCallback((accounts: string[]) => {
-    if (accounts.length === 0) {
-      // Don't call disconnectWallet here to avoid circular dependency
-      // Just clear the local state, the disconnect logic will handle the rest
-      setProvider(null);
-      setAccount(null);
-      setRawProvider(null);
-      dispatch({ type: 'DISCONNECT' });
-    } else {
-      setAccount(accounts[0]);
-    }
-  }, [dispatch]);
-
-  const handleChainChanged = useCallback(() => {
-    window.location.reload();
-  }, []);
+  }, [dispatch, rawProvider]);
 
   // Auto-connect on app load if provider was cached
   useEffect(() => {
@@ -141,7 +136,8 @@ export const useWeb3 = () => {
       }
     };
     
-    autoConnect();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    void autoConnect();
   }, [connectWallet, provider]);
 
   return { provider, account, loading, connectWallet, disconnectWallet };

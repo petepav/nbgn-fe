@@ -7,9 +7,11 @@ import reportWebVitals from './reportWebVitals';
 import { initializeEruda } from './utils/eruda';
 
 // Initialize Eruda for mobile debugging if conditions are met
-initializeEruda();
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+void initializeEruda();
 
 const root = ReactDOM.createRoot(
+  // eslint-disable-next-line no-undef
   document.getElementById('root') as HTMLElement
 );
 root.render(

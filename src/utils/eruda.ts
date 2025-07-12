@@ -49,15 +49,13 @@ export const initializeEruda = async (): Promise<void> => {
     
     // Initialize Eruda
     eruda.default.init({
-      // Hide Eruda by default, user can show it by tapping the icon
-      autoShow: false,
       // Position the entry button
-      entryBtn: true,
-      // Custom styles for the entry button
+      container: document.body,
       tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets', 'sources'],
     });
     
     // Add some styling to make the entry button more visible
+    // eslint-disable-next-line no-undef
     const style = document.createElement('style');
     style.textContent = `
       .eruda-entry-btn {
@@ -70,6 +68,7 @@ export const initializeEruda = async (): Promise<void> => {
         transform: scale(0.95) !important;
       }
     `;
+    // eslint-disable-next-line no-undef
     document.head.appendChild(style);
     
     // eslint-disable-next-line no-console, no-undef
