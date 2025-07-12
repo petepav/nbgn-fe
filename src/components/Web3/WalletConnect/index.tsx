@@ -73,7 +73,7 @@ export const WalletConnect: React.FC = () => {
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm ${
                   copiedAddress
                     ? 'bg-green-50 border-green-200 text-green-700 shadow-green-100' 
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-md'
+                    : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200 hover:border-gray-400 hover:shadow-md'
                 }`}
                 title={copiedAddress ? 'Copied!' : 'Copy address'}
               >
