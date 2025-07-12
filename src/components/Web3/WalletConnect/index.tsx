@@ -6,9 +6,23 @@ import { useAppState } from '../../../contexts/AppContext';
 
 export const WalletConnect: React.FC = () => {
   const { t } = useTranslation();
-  const { connectWallet, disconnectWallet, loading } = useWeb3();
+  const { connectWallet, disconnectWallet, loading, isReconnecting } = useWeb3();
   const { formattedBalance, loading: nbgnLoading, refresh } = useNBGN();
   const { user } = useAppState();
+
+  // Show reconnecting state while checking for previous connections
+  if (isReconnecting) {
+    return (
+      <div className="wallet-connect">
+        <div className="loader-container">
+          <div className="red-loader"></div>
+        </div>
+        <p className="text-center text-sm text-gray-600 mt-2">
+          🔄 Checking for previous wallet connection...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="wallet-connect">
@@ -39,7 +53,7 @@ export const WalletConnect: React.FC = () => {
         )
       ) : (
         <button 
-          onClick={connectWallet} 
+          onClick={() => connectWallet(false)} 
           disabled={loading}
           className="connect-button"
         >

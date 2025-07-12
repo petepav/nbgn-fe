@@ -50,6 +50,7 @@ export const initializeEruda = async (): Promise<void> => {
     // Initialize Eruda
     eruda.default.init({
       // Position the entry button
+      // eslint-disable-next-line no-undef
       container: document.body,
       tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets', 'sources'],
     });

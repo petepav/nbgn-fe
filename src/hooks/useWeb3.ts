@@ -3,6 +3,7 @@ import { BrowserProvider } from 'ethers';
 import Web3Modal from 'web3modal';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import { useAppDispatch } from '../contexts/AppContext';
+import { saveWalletConnection, clearWalletConnection, shouldAutoReconnect } from '../utils/walletStorage';
 
 const providerOptions = {
   walletconnect: {
@@ -25,6 +26,7 @@ export const useWeb3 = () => {
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(true); // Track initial reconnection state
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rawProvider, setRawProvider] = useState<any>(null);
   const dispatch = useAppDispatch();
@@ -33,6 +35,7 @@ export const useWeb3 = () => {
     if (accounts.length === 0) {
       // Clear local state when accounts are disconnected
       web3Modal.clearCachedProvider();
+      clearWalletConnection(); // Clear our custom storage too
       setProvider(null);
       setAccount(null);
       setRawProvider(null);
@@ -47,8 +50,11 @@ export const useWeb3 = () => {
     window.location.reload();
   }, []);
 
-  const connectWallet = useCallback(async () => {
-    setLoading(true);
+  const connectWallet = useCallback(async (isAutoReconnect = false) => {
+    if (!isAutoReconnect) {
+      setLoading(true);
+    }
+    
     try {
       const connection = await web3Modal.connect();
       const provider = new BrowserProvider(connection);
@@ -58,6 +64,10 @@ export const useWeb3 = () => {
       setProvider(provider);
       setAccount(address);
       setRawProvider(connection); // Store raw provider for disconnect
+      
+      // Save wallet connection state for persistence
+      const providerName = connection.constructor.name || 'unknown';
+      saveWalletConnection(providerName);
       
       // Initial dispatch with address only - NBGN balance will be fetched by useNBGN hook
       dispatch({
@@ -79,8 +89,15 @@ export const useWeb3 = () => {
     } catch (error) {
       // eslint-disable-next-line no-console, no-undef
       console.error('Connection failed:', error);
+      
+      // Clear cached provider if connection failed
+      if (isAutoReconnect) {
+        web3Modal.clearCachedProvider();
+        clearWalletConnection();
+      }
     } finally {
       setLoading(false);
+      setIsReconnecting(false);
     }
   }, [dispatch, handleAccountsChanged, handleChainChanged]);
 
@@ -107,6 +124,9 @@ export const useWeb3 = () => {
       // Clear Web3Modal cache
       web3Modal.clearCachedProvider();
       
+      // Clear our custom wallet connection storage
+      clearWalletConnection();
+      
       // Reset local state
       setProvider(null);
       setAccount(null);
@@ -121,6 +141,7 @@ export const useWeb3 = () => {
       
       // Still proceed with state cleanup even if provider disconnect fails
       web3Modal.clearCachedProvider();
+      clearWalletConnection();
       setProvider(null);
       setAccount(null);
       setRawProvider(null);
@@ -128,11 +149,19 @@ export const useWeb3 = () => {
     }
   }, [dispatch, rawProvider]);
 
-  // Auto-connect on app load if provider was cached
+  // Auto-connect on app load if provider was cached and user previously connected
   useEffect(() => {
     const autoConnect = async () => {
-      if (web3Modal.cachedProvider && !provider) {
-        await connectWallet();
+      const shouldReconnect = shouldAutoReconnect();
+      const hasCachedProvider = web3Modal.cachedProvider;
+      
+      if (hasCachedProvider && shouldReconnect && !provider) {
+        // eslint-disable-next-line no-console, no-undef
+        console.log('🔄 Auto-reconnecting to previous wallet...');
+        await connectWallet(true); // Pass true to indicate this is auto-reconnect
+      } else {
+        // Not reconnecting, set loading state to false
+        setIsReconnecting(false);
       }
     };
     
@@ -140,5 +169,12 @@ export const useWeb3 = () => {
     void autoConnect();
   }, [connectWallet, provider]);
 
-  return { provider, account, loading, connectWallet, disconnectWallet };
+  return { 
+    provider, 
+    account, 
+    loading, 
+    isReconnecting, 
+    connectWallet: (isAutoReconnect?: boolean) => connectWallet(isAutoReconnect), 
+    disconnectWallet 
+  };
 };
