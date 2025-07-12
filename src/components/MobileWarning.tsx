@@ -17,13 +17,20 @@ export const MobileWarning: React.FC = () => {
           userAgent
         );
 
-      // Check if it's MetaMask's built-in browser
-      const isMetaMask =
-        userAgent.includes('metamask') ||
-        // eslint-disable-next-line no-undef
-        (typeof window !== 'undefined' && window.ethereum?.isMetaMask);
+      // Check if it's MetaMask's built-in browser (not just extension)
+      const isMetaMaskBrowser = userAgent.includes('metamask');
 
-      setShowWarning(isMobileDevice && !isMetaMask);
+      // For testing: add a debug log
+      // eslint-disable-next-line no-console, no-undef
+      console.log('Mobile Detection:', {
+        screenWidth,
+        userAgent,
+        isMobileDevice,
+        isMetaMaskBrowser,
+        willShowWarning: isMobileDevice && !isMetaMaskBrowser,
+      });
+
+      setShowWarning(isMobileDevice && !isMetaMaskBrowser);
     };
 
     checkMobile();
