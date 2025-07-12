@@ -429,10 +429,10 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                         )}
                         <button
                           onClick={() => copyToClipboard(tx.type === 'sent' ? tx.to : tx.from)}
-                          className={`ml-1 p-1 rounded hover:bg-gray-100 transition-colors ${
+                          className={`ml-2 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 border ${
                             copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
-                              ? 'text-green-600' 
-                              : 'text-gray-400 hover:text-gray-600'
+                              ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' 
+                              : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 hover:shadow-sm'
                           }`}
                           title={
                             copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
@@ -444,7 +444,8 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                             copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
                               ? 'fa-check' 
                               : 'fa-copy'
-                          } text-xs`}></i>
+                          } mr-1`}></i>
+                          {copiedAddress === (tx.type === 'sent' ? tx.to : tx.from) ? 'Copied!' : 'Copy'}
                         </button>
                       </div>
                     </div>
@@ -465,10 +466,10 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                     </div>
                   )}
                   {tx.transactionFee && parseFloat(tx.transactionFee) > 0 && (
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-600 flex items-center">
                         <i className="fas fa-gas-pump mr-2 text-gray-500"></i>
-                        Transaction Fee:
+                        Transaction Fee: 
                       </span>
                       <span className="font-medium text-gray-600">
                         {formatFee(tx.transactionFee)}
