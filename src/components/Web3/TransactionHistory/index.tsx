@@ -466,12 +466,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                     </div>
                   )}
                   {tx.transactionFee && parseFloat(tx.transactionFee) > 0 && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 flex items-center">
-                        <i className="fas fa-gas-pump mr-2 text-gray-500"></i>
-                        Transaction Fee: 
+                    <div className="flex justify-between items-center text-xs opacity-75">
+                      <span className="text-gray-500 flex items-center text-xs">
+                        <i className="fas fa-gas-pump mr-1 text-gray-400 text-xs"></i>
+                        <span className="text-xs">Fee: </span>
                       </span>
-                      <span className="font-medium text-gray-600">
+                      <span className="text-xs text-gray-500 font-mono">
                         {formatFee(tx.transactionFee)}
                       </span>
                     </div>
