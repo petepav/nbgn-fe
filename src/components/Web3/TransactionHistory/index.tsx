@@ -4,6 +4,8 @@ import { useNBGN } from '../../../hooks/useNBGN';
 import { useAppState } from '../../../contexts/AppContext';
 import { ethers } from 'ethers';
 import { useNBGNFormatter } from '../../../utils/formatters';
+import { EURE_ABI } from '../../../contracts/abis/EURe';
+import environment from '../../../config/environment';
 
 interface Transaction {
   hash: string;
@@ -13,9 +15,17 @@ interface Transaction {
   blockNumber: number;
   timestamp: number;
   type: 'sent' | 'received' | 'minted' | 'sold';
+  eureAmount?: string;
+  gasUsed?: string;
+  gasPrice?: string;
+  transactionFee?: string;
 }
 
-export const TransactionHistory: React.FC = () => {
+interface TransactionHistoryProps {
+  onNavigateToSend?: (address: string) => void;
+}
+
+export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNavigateToSend }) => {
   const { t } = useTranslation();
   const { user } = useAppState();
   const { web3 } = useAppState();
@@ -28,6 +38,72 @@ export const TransactionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalFound, setTotalFound] = useState(0);
   const TRANSACTIONS_PER_PAGE = 20;
+
+  // Helper function to get EURe contract
+  const getEUReContract = async () => {
+    if (!web3.provider || !environment.eureAddress) return null;
+    try {
+      const signer = await web3.provider.getSigner();
+      return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
+    } catch (error) {
+      console.error('Failed to get EURe contract:', error);
+      return null;
+    }
+  };
+
+  // Function to enrich transactions with EURe amounts and transaction fees
+  const enrichTransactionsWithDetails = async (transactions: Transaction[]) => {
+    if (!web3.provider) return;
+
+    for (const tx of transactions) {
+      try {
+        // Get transaction receipt for fee information
+        const receipt = await web3.provider.getTransactionReceipt(tx.hash);
+        if (receipt) {
+          const gasUsed = receipt.gasUsed.toString();
+          const fullTx = await web3.provider.getTransaction(tx.hash);
+          if (fullTx) {
+            const gasPrice = fullTx.gasPrice?.toString() || '0';
+            const fee = (BigInt(gasUsed) * BigInt(gasPrice)).toString();
+            
+            tx.gasUsed = gasUsed;
+            tx.gasPrice = gasPrice;
+            tx.transactionFee = ethers.formatEther(fee);
+          }
+        }
+
+        // For minted/sold transactions, try to find corresponding EURe transfer
+        if (tx.type === 'minted' || tx.type === 'sold') {
+          try {
+            const eureContract = await getEUReContract();
+            if (eureContract && receipt) {
+              // Look for EURe Transfer events in the same transaction
+              const eureTransferFilter = eureContract.filters.Transfer();
+              const eureEvents = await eureContract.queryFilter(
+                eureTransferFilter,
+                receipt.blockNumber,
+                receipt.blockNumber
+              );
+              
+              // Find EURe transfer in the same transaction
+              const eureTransfer = eureEvents.find(event => 
+                event.transactionHash === tx.hash
+              );
+              
+              if (eureTransfer && 'args' in eureTransfer && Array.isArray(eureTransfer.args)) {
+                const eureArgs = eureTransfer.args as string[];
+                tx.eureAmount = ethers.formatUnits(eureArgs[2], 18);
+              }
+            }
+          } catch (error) {
+            console.error('Failed to fetch EURe amount for transaction:', tx.hash, error);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to enrich transaction:', tx.hash, error);
+      }
+    }
+  };
 
   const fetchTransactions = async (page = 0, append = false) => {
     if (!user.address || !web3.provider) return;
@@ -119,6 +195,9 @@ export const TransactionHistory: React.FC = () => {
       const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
       const paginatedTxs = processedTxs.slice(startIndex, endIndex);
 
+      // Enrich transactions with EURe amounts and fees
+      await enrichTransactionsWithDetails(paginatedTxs);
+
       // Fetch timestamps for the current page
       for (const tx of paginatedTxs) {
         if (tx.timestamp === 0) {
@@ -188,6 +267,26 @@ export const TransactionHistory: React.FC = () => {
   const formatValue = (value: string) => {
     const etherValue = ethers.formatUnits(value, 18);
     return formatNBGN(etherValue);
+  };
+
+  const formatEURe = (value: string) => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return '0,00 €';
+    
+    return numValue.toLocaleString('bg-BG', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) + ' €';
+  };
+
+  const formatFee = (value: string) => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return '0,0000 ETH';
+    
+    return numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 6,
+      maximumFractionDigits: 6
+    }) + ' ETH';
   };
 
   if (loading) {
@@ -286,15 +385,52 @@ export const TransactionHistory: React.FC = () => {
                   <div className="text-sm text-gray-600 pl-13">
                     <p>
                       {typeConfig.addressLabel}{' '}
-                      {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                      {onNavigateToSend ? (
+                        <button
+                          onClick={() => onNavigateToSend(tx.type === 'sent' ? tx.to : tx.from)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                          title="Click to send to this address"
+                        >
+                          {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                        </button>
+                      ) : (
+                        formatAddress(tx.type === 'sent' ? tx.to : tx.from)
+                      )}
                     </p>
                   </div>
                 )}
+                
+                {/* EURe Amount and Transaction Fee */}
+                <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                  {tx.eureAmount && parseFloat(tx.eureAmount) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 flex items-center">
+                        <i className="fas fa-euro-sign mr-2 text-blue-600"></i>
+                        {tx.type === 'minted' ? 'EURe Spent:' : 'EURe Received:'}
+                      </span>
+                      <span className="font-semibold text-blue-700">
+                        {formatEURe(tx.eureAmount)}
+                      </span>
+                    </div>
+                  )}
+                  {tx.transactionFee && parseFloat(tx.transactionFee) > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 flex items-center">
+                        <i className="fas fa-gas-pump mr-2 text-gray-500"></i>
+                        Transaction Fee:
+                      </span>
+                      <span className="font-medium text-gray-600">
+                        {formatFee(tx.transactionFee)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 <a
                   href={`https://arbiscan.io/tx/${tx.hash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-gray-400 hover:text-gray-600 mt-2 inline-block"
+                  className="text-xs text-gray-400 hover:text-gray-600 mt-3 inline-block"
                 >
                   <i className="fas fa-external-link-alt mr-1"></i>
                   View on Arbiscan

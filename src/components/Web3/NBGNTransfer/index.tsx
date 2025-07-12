@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNBGN } from '../../../hooks/useNBGN';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
 
-export const NBGNTransfer: React.FC = () => {
+interface NBGNTransferProps {
+  initialRecipient?: string;
+}
+
+export const NBGNTransfer: React.FC<NBGNTransferProps> = ({ initialRecipient = '' }) => {
   const { t } = useTranslation();
   const { formattedBalance, rawBalance, transfer } = useNBGN();
   const { executeTransaction, status, hash, error } = useTransaction();
   
-  const [recipient, setRecipient] = useState('');
+  const [recipient, setRecipient] = useState(initialRecipient);
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setRecipient(initialRecipient);
+  }, [initialRecipient]);
 
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();

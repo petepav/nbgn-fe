@@ -16,6 +16,19 @@ export const AppContent: React.FC = () => {
   const [activeWidget, setActiveWidget] = useState<
     'send' | 'history' | 'exchange' | 'redeem'
   >('send');
+  const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
+
+  const handleNavigateToSend = (address: string) => {
+    setPrefilledRecipient(address);
+    setActiveWidget('send');
+  };
+
+  const handleWidgetChange = (widget: 'send' | 'history' | 'exchange' | 'redeem') => {
+    if (widget !== 'send') {
+      setPrefilledRecipient('');
+    }
+    setActiveWidget(widget);
+  };
 
   return (
     <div className="App">
@@ -41,7 +54,7 @@ export const AppContent: React.FC = () => {
             {/* Widget Toggle Buttons */}
             <div className="flex justify-center gap-3 mb-8 flex-wrap">
               <button
-                onClick={() => setActiveWidget('send')}
+                onClick={() => handleWidgetChange('send')}
                 className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
                   activeWidget === 'send'
                     ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
@@ -53,7 +66,7 @@ export const AppContent: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setActiveWidget('exchange')}
+                onClick={() => handleWidgetChange('exchange')}
                 className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
                   activeWidget === 'exchange'
                     ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg scale-105'
@@ -65,7 +78,7 @@ export const AppContent: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setActiveWidget('redeem')}
+                onClick={() => handleWidgetChange('redeem')}
                 className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
                   activeWidget === 'redeem'
                     ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg scale-105'
@@ -77,7 +90,7 @@ export const AppContent: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setActiveWidget('history')}
+                onClick={() => handleWidgetChange('history')}
                 className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
                   activeWidget === 'history'
                     ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg scale-105'
@@ -90,10 +103,10 @@ export const AppContent: React.FC = () => {
             </div>
 
             {/* Widget Content */}
-            {activeWidget === 'send' && <NBGNTransfer />}
+            {activeWidget === 'send' && <NBGNTransfer initialRecipient={prefilledRecipient} />}
             {activeWidget === 'exchange' && <NBGNExchange />}
             {activeWidget === 'redeem' && <NBGNRedeem />}
-            {activeWidget === 'history' && <TransactionHistory />}
+            {activeWidget === 'history' && <TransactionHistory onNavigateToSend={handleNavigateToSend} />}
           </div>
         )}
       </header>

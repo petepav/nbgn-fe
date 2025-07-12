@@ -177,7 +177,7 @@ export const NBGNRedeem: React.FC = () => {
           />
           <button
             type="button"
-            onClick={() => setNbgnAmount(nbgnBalance)}
+            onClick={() => setNbgnAmount(parseFloat(nbgnBalance).toFixed(2))}
             className="mt-2 text-sm text-red-600 hover:text-red-700 font-medium"
           >
             {t('web3:redeem.useMax', 'Sell all')}
@@ -211,7 +211,7 @@ export const NBGNRedeem: React.FC = () => {
           <button
             type="button"
             onClick={handleBurn}
-            disabled={isBurning || !nbgnAmount || parseFloat(nbgnAmount) <= 0 || parseFloat(nbgnAmount) > parseFloat(nbgnBalance)}
+            disabled={isBurning || !nbgnAmount || parseFloat(nbgnAmount) <= 0 || parseFloat(nbgnAmount) > parseFloat(parseFloat(nbgnBalance).toFixed(2))}
             className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-red-700 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
           >
             {isBurning ? (
@@ -228,7 +228,7 @@ export const NBGNRedeem: React.FC = () => {
           </button>
           
           {/* Insufficient Balance Warning */}
-          {nbgnAmount && parseFloat(nbgnAmount) > parseFloat(nbgnBalance) && (
+          {nbgnAmount && parseFloat(nbgnAmount) > parseFloat(parseFloat(nbgnBalance).toFixed(2)) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm text-center font-medium">
                 <i className="fas fa-exclamation-triangle mr-2"></i>
