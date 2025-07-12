@@ -30,6 +30,14 @@ export const AppContent: React.FC = () => {
             <i className="fas fa-book-open mr-2"></i>
             Информация и упътване 📖
           </a>
+          {/* Show debug console link on mobile */}
+          {/* eslint-disable-next-line no-undef */}
+          {window.innerWidth <= 768 && (
+            <a href="/debug" className="info-nav-link ml-3">
+              <i className="fas fa-bug mr-2"></i>
+              Debug Console 🔧
+            </a>
+          )}
         </div>
 
         <MobileWarning />
