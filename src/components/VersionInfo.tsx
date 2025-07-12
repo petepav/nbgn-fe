@@ -31,8 +31,8 @@ export const VersionInfo: React.FC = () => {
         <i className="fas fa-code-branch mr-2"></i>
         Версия {version} • Билд от {buildDate}
         {isMobile && (
-          <Link to="/debug" className="debug-link ml-3">
-            <i className="fas fa-bug"></i>
+          <Link to="/debug" className="eruda-button">
+            Eruda
           </Link>
         )}
       </p>

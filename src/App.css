@@ -573,19 +573,22 @@ button {
   opacity: 0.8;
 }
 
-.debug-link {
-  color: var(--text-secondary);
+.eruda-button {
+  background: #6b7280;
+  color: white;
   text-decoration: none;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
   display: inline-block;
-  font-size: 14px;
+  transition: all 0.2s;
 }
 
-.debug-link:hover {
-  background: rgba(0, 150, 111, 0.1);
-  color: var(--bg-green);
+.eruda-button:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
 }
 
 /* Disclaimer Page */
