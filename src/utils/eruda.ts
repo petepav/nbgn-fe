@@ -23,31 +23,18 @@ const isMobileDevice = (): boolean => {
   );
 };
 
-const shouldLoadEruda = (): boolean => {
-  // Load Eruda on mobile devices by default
-  return isMobileDevice();
-};
-
 export const initializeEruda = async (): Promise<void> => {
-  // eslint-disable-next-line no-console, no-undef
-  console.log('🔍 Checking if Eruda should load...');
-
-  if (!shouldLoadEruda()) {
-    // eslint-disable-next-line no-console, no-undef
-    console.log('❌ Eruda will not load');
+  // Only initialize on mobile to capture logs from the start
+  if (!isMobileDevice()) {
     return;
   }
 
-  // eslint-disable-next-line no-console, no-undef
-  console.log('✅ Eruda will load');
-
   try {
-    // Import Eruda dynamically to avoid loading it unnecessarily
+    // Import Eruda dynamically
     const eruda = await import('eruda');
 
-    // Initialize Eruda
+    // Initialize Eruda normally but completely hidden
     eruda.default.init({
-      // Position the entry button
       // eslint-disable-next-line no-undef
       container: document.body,
       tool: [
@@ -60,33 +47,42 @@ export const initializeEruda = async (): Promise<void> => {
         'sources',
       ],
       autoScale: false,
-      useShadowDom: true,
+      useShadowDom: false, // Disable shadow DOM to avoid isolation
     });
-
-    // Make sure Eruda doesn't auto-open
+    
+    // Keep Eruda hidden but active
     eruda.default.hide();
-
-    // Add some styling to make the entry button more visible
+    
+    // Immediately add styles to keep it completely off-screen
     // eslint-disable-next-line no-undef
     const style = document.createElement('style');
+    style.setAttribute('data-eruda-hidden', 'true');
     style.textContent = `
       .eruda-entry-btn {
-        background: linear-gradient(135deg, #00966F 0%, #00B886 100%) !important;
-        border: 2px solid #fff !important;
-        box-shadow: 0 4px 12px rgba(0, 150, 111, 0.3) !important;
-        z-index: 999999 !important;
+        display: none !important;
       }
-      .eruda-entry-btn:active {
-        transform: scale(0.95) !important;
+      #eruda {
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+        opacity: 0 !important;
       }
     `;
     // eslint-disable-next-line no-undef
     document.head.appendChild(style);
+    
+    // Store Eruda instance globally so debug page can access it
+    // eslint-disable-next-line no-undef
+    (window as any).__eruda = eruda.default;
 
     // eslint-disable-next-line no-console, no-undef
-    console.log('📱 Eruda mobile debugging console initialized');
-    // eslint-disable-next-line no-console, no-undef
-    console.log('🔧 Tap the floating button to open the console');
+    console.log('📱 Eruda initialized (hidden) - capturing logs from startup');
   } catch (error) {
     // eslint-disable-next-line no-console, no-undef
     console.warn('Failed to initialize Eruda:', error);
