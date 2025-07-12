@@ -6,10 +6,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeEruda } from './utils/eruda';
 
-// Initialize Eruda for mobile debugging if conditions are met
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-void initializeEruda();
-
 const root = ReactDOM.createRoot(
   // eslint-disable-next-line no-undef
   document.getElementById('root') as HTMLElement
@@ -19,6 +15,13 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Initialize Eruda AFTER React renders to prevent blocking
+// eslint-disable-next-line no-undef
+setTimeout(() => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  void initializeEruda();
+}, 100);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
