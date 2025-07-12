@@ -33,17 +33,27 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
         'qr-scanner',
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: 280, height: 280 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
         },
         false
       );
 
       scanner.render(
         decodedText => {
-          // Successfully scanned
-          setRecipient(decodedText);
-          setShowScanner(false);
-          void scanner.clear();
+          // Successfully scanned - validate it's an address
+          const cleanedAddress = decodedText.trim();
+          if (cleanedAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+            setRecipient(cleanedAddress);
+            setShowScanner(false);
+            void scanner.clear();
+          } else {
+            // Invalid address format - try again
+          }
         },
         () => {
           // Error scanning - ignore
@@ -250,15 +260,15 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
       {/* QR Scanner Modal */}
       {showScanner && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={handleScannerClose}
         >
           <div
-            className="bg-white rounded-2xl p-6 max-w-md mx-4 shadow-2xl"
+            className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="text-center mb-4">
-              <h3 className="text-lg font-bold text-gray-800">
+              <h3 className="text-xl font-bold text-gray-800">
                 <i className="fas fa-qrcode mr-2 text-blue-600"></i>
                 Scan QR Code
               </h3>
@@ -269,13 +279,14 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
 
             <div
               id="qr-scanner"
-              className="border rounded-lg overflow-hidden"
+              className="border-2 border-gray-200 rounded-lg overflow-hidden bg-black"
+              style={{ minHeight: '300px' }}
             ></div>
 
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <button
                 onClick={handleScannerClose}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-8 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-semibold"
               >
                 <i className="fas fa-times mr-2"></i>
                 Cancel

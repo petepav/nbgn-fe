@@ -158,9 +158,11 @@ export const WalletConnect: React.FC = () => {
               <div className="bg-white p-4 rounded-xl border-2 border-gray-200 mb-4">
                 <QRCodeSVG
                   value={user.address}
-                  size={200}
-                  level="M"
+                  size={240}
+                  level="H"
                   includeMargin={true}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
                 />
               </div>
               <p className="text-sm text-gray-600 mb-4">

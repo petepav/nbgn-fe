@@ -26,7 +26,9 @@ export const AppContent: React.FC = () => {
     setActiveWidget('send');
   };
 
-  const handleWidgetChange = (widget: 'send' | 'history' | 'exchange' | 'redeem') => {
+  const handleWidgetChange = (
+    widget: 'send' | 'history' | 'exchange' | 'redeem'
+  ) => {
     if (widget !== 'send') {
       setPrefilledRecipient('');
     }
@@ -55,15 +57,18 @@ export const AppContent: React.FC = () => {
         {user.address && (
           <div className="mt-8 w-full max-w-2xl">
             {/* Chain Warning */}
-            <ChainWarning currentChainId={chainId} onSwitchChain={switchToArbitrum} />
+            <ChainWarning
+              currentChainId={chainId}
+              onSwitchChain={switchToArbitrum}
+            />
             {/* Widget Toggle Buttons */}
-            <div className="flex justify-center gap-3 mb-8 flex-wrap">
+            <div className="flex justify-center gap-6 mb-8 flex-wrap">
               <button
                 onClick={() => handleWidgetChange('send')}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
+                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
                   activeWidget === 'send'
-                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300 hover:text-green-600'
+                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl scale-105 border-2 border-green-700'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400 hover:text-green-600 hover:shadow-lg'
                 }`}
               >
                 <i className="fas fa-paper-plane mr-2"></i>
@@ -72,10 +77,10 @@ export const AppContent: React.FC = () => {
 
               <button
                 onClick={() => handleWidgetChange('exchange')}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
+                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
                   activeWidget === 'exchange'
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-xl scale-105 border-2 border-blue-700'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 hover:shadow-lg'
                 }`}
               >
                 <i className="fas fa-coins mr-2"></i>
@@ -84,10 +89,10 @@ export const AppContent: React.FC = () => {
 
               <button
                 onClick={() => handleWidgetChange('redeem')}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
+                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
                   activeWidget === 'redeem'
-                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-red-300 hover:text-red-600'
+                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-xl scale-105 border-2 border-red-700'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-red-400 hover:text-red-600 hover:shadow-lg'
                 }`}
               >
                 <i className="fas fa-fire mr-2"></i>
@@ -96,10 +101,10 @@ export const AppContent: React.FC = () => {
 
               <button
                 onClick={() => handleWidgetChange('history')}
-                className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
+                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
                   activeWidget === 'history'
-                    ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:text-gray-600'
+                    ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-xl scale-105 border-2 border-gray-700'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:text-gray-600 hover:shadow-lg'
                 }`}
               >
                 <i className="fas fa-clock-rotate-left mr-2"></i>
@@ -108,10 +113,14 @@ export const AppContent: React.FC = () => {
             </div>
 
             {/* Widget Content */}
-            {activeWidget === 'send' && <NBGNTransfer initialRecipient={prefilledRecipient} />}
+            {activeWidget === 'send' && (
+              <NBGNTransfer initialRecipient={prefilledRecipient} />
+            )}
             {activeWidget === 'exchange' && <NBGNExchange />}
             {activeWidget === 'redeem' && <NBGNRedeem />}
-            {activeWidget === 'history' && <TransactionHistory onNavigateToSend={handleNavigateToSend} />}
+            {activeWidget === 'history' && (
+              <TransactionHistory onNavigateToSend={handleNavigateToSend} />
+            )}
           </div>
         )}
       </header>
