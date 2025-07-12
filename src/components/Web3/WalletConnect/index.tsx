@@ -66,18 +66,18 @@ export const WalletConnect: React.FC = () => {
               <i className="fas fa-check-circle text-green-500 mr-2"></i>
               {t('web3:wallet.connected')}
             </p>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <p className="address">{user.address.substring(0, 6)}...{user.address.substring(38)}</p>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <p className="address text-sm font-mono">{user.address.substring(0, 6)}...{user.address.substring(38)}</p>
               <button
                 onClick={copyAddress}
-                className={`px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 border ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm ${
                   copiedAddress
-                    ? 'bg-green-50 border-green-200 text-green-700' 
-                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700'
+                    ? 'bg-green-50 border-green-200 text-green-700 shadow-green-100' 
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-md'
                 }`}
                 title={copiedAddress ? 'Copied!' : 'Copy address'}
               >
-                <i className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-1`}></i>
+                <i className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-2`}></i>
                 {copiedAddress ? 'Copied!' : 'Copy'}
               </button>
             </div>
