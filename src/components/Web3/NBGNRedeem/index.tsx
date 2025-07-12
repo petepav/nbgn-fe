@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
-import { useAppState } from '../../../contexts/AppContext';
 import { useNBGN } from '../../../hooks/useNBGN';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
-import { EURE_ABI } from '../../../contracts/abis/EURe';
-import environment from '../../../config/environment';
-import { useNBGNFormatter } from '../../../utils/formatters';
 
 export const NBGNRedeem: React.FC = () => {
   const { t } = useTranslation();
-  const { web3, user } = useAppState();
   const { getContract, refresh: refreshNBGN, rawBalance: nbgnBalance, formattedBalance } = useNBGN();
   const { executeTransaction, status, hash, error } = useTransaction();
-  const formatNBGN = useNBGNFormatter();
   
   const [nbgnAmount, setNbgnAmount] = useState('');
-  const [eureBalance, setEureBalance] = useState('0');
   const [expectedEURe, setExpectedEURe] = useState('0');
   const [loading, setLoading] = useState(true);
   const [isBurning, setIsBurning] = useState(false);
@@ -33,43 +26,11 @@ export const NBGNRedeem: React.FC = () => {
     });
   };
 
-  // Get EURe contract
-  const getEUReContract = async () => {
-    if (!web3.provider || !environment.eureAddress) return null;
-    
-    try {
-      const signer = await web3.provider.getSigner();
-      return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
-    } catch (error) {
-      console.error('Failed to get EURe contract:', error);
-      return null;
-    }
-  };
 
-  // Fetch EURe balance
+  // Set loading to false since we don't need to fetch EURe balance
   useEffect(() => {
-    const fetchEUReBalance = async () => {
-      if (!user.address || !web3.provider) return;
-      
-      try {
-        setLoading(true);
-        const eureContract = await getEUReContract();
-        
-        if (!eureContract) return;
-        
-        // Get EURe balance
-        const balance = await eureContract.balanceOf(user.address);
-        const formattedBalance = ethers.formatUnits(balance, 18); // EURe has 18 decimals
-        setEureBalance(formattedBalance);
-      } catch (error) {
-        console.error('Failed to fetch EURe balance:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEUReBalance();
-  }, [user.address, web3.provider]);
+    setLoading(false);
+  }, []);
 
   // Calculate expected EURe when amount changes
   useEffect(() => {
@@ -86,13 +47,12 @@ export const NBGNRedeem: React.FC = () => {
         const nbgnAmountWei = ethers.parseEther(nbgnAmount);
         const expected = await nbgnContract.calculateEURe(nbgnAmountWei);
         setExpectedEURe(ethers.formatUnits(expected, 18)); // EURe has 18 decimals
-      } catch (error) {
-        console.error('Failed to calculate expected EURe:', error);
+      } catch {
         setExpectedEURe('0');
       }
     };
 
-    calculateExpected();
+    void calculateExpected();
   }, [nbgnAmount, getContract]);
 
   const handleBurn = async () => {
@@ -115,15 +75,8 @@ export const NBGNRedeem: React.FC = () => {
       
       // Refresh balances
       await refreshNBGN();
-      
-      // Refresh EURe balance
-      const eureContract = await getEUReContract();
-      if (eureContract) {
-        const balance = await eureContract.balanceOf(user.address);
-        setEureBalance(ethers.formatUnits(balance, 18));
-      }
-    } catch (err) {
-      console.error('Burning failed:', err);
+    } catch {
+      // Error is handled by the transaction hook
     } finally {
       setIsBurning(false);
     }

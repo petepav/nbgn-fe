@@ -240,7 +240,7 @@ export const NBGNExchange: React.FC = () => {
         {t('web3:exchange.title', 'Buy NBGN with EURe')}
       </h3>
 
-      {/* EURC Balance Card */}
+      {/* EURe Balance Card */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-blue-700">{t('web3:exchange.eureBalance', 'EURe Balance')}</span>

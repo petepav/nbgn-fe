@@ -38,8 +38,8 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({ initialRecipient = '
       // Clear form on success
       setRecipient('');
       setAmount('');
-    } catch (err) {
-      console.error('Transfer failed:', err);
+    } catch {
+      // Error is handled by the transaction hook
     } finally {
       setIsSubmitting(false);
     }
@@ -47,6 +47,18 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({ initialRecipient = '
 
   const maxAmount = () => {
     setAmount(rawBalance);
+  };
+
+  const adjustAmount = (delta: number) => {
+    const currentAmount = parseFloat(amount) || 0;
+    const newAmount = Math.max(0, currentAmount + delta);
+    const maxBalance = parseFloat(rawBalance) || 0;
+    
+    if (newAmount <= maxBalance) {
+      setAmount(newAmount.toFixed(2));
+    } else {
+      setAmount(maxBalance.toFixed(2));
+    }
   };
 
   return (
@@ -96,6 +108,62 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({ initialRecipient = '
             >
               MAX
             </button>
+          </div>
+          
+          {/* Amount Adjustment Buttons */}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => adjustAmount(-1)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title="Subtract 1 NBGN"
+              >
+                -1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-0.5)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title="Subtract 0.5 NBGN"
+              >
+                -0.5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-0.05)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title="Subtract 0.05 NBGN"
+              >
+                -0.05
+              </button>
+            </div>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => adjustAmount(0.05)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title="Add 0.05 NBGN"
+              >
+                +0.05
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(0.5)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title="Add 0.5 NBGN"
+              >
+                +0.5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(1)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title="Add 1 NBGN"
+              >
+                +1
+              </button>
+            </div>
           </div>
         </div>
 

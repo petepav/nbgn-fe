@@ -25,6 +25,7 @@ const web3Modal = new Web3Modal({
 export const useWeb3 = () => {
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(true); // Track initial reconnection state
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,7 +46,11 @@ export const useWeb3 = () => {
     }
   }, [dispatch]);
 
-  const handleChainChanged = useCallback(() => {
+  const handleChainChanged = useCallback(async (chainHex: string) => {
+    const newChainId = parseInt(chainHex, 16);
+    setChainId(newChainId);
+    
+    // Still reload for now to ensure clean state
     // eslint-disable-next-line no-undef
     window.location.reload();
   }, []);
@@ -60,9 +65,11 @@ export const useWeb3 = () => {
       const provider = new BrowserProvider(connection);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
+      const network = await provider.getNetwork();
       
       setProvider(provider);
       setAccount(address);
+      setChainId(Number(network.chainId));
       setRawProvider(connection); // Store raw provider for disconnect
       
       // Save wallet connection state for persistence
