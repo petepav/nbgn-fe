@@ -573,6 +573,21 @@ button {
   opacity: 0.8;
 }
 
+.debug-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: inline-block;
+  font-size: 14px;
+}
+
+.debug-link:hover {
+  background: rgba(0, 150, 111, 0.1);
+  color: var(--bg-green);
+}
+
 /* Disclaimer Page */
 .disclaimer-page {
   min-height: 100vh;
