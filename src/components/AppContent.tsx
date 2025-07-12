@@ -109,6 +109,36 @@ export const AppContent: React.FC = () => {
               Виж пълния дисклеймър тук. 🔗
             </a>
           </p>
+
+          <div className="footer-links">
+            <a
+              href="https://discord.gg/ereWXZWMvj"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              <i className="fab fa-discord mr-2"></i>
+              Discord
+            </a>
+            <a
+              href="https://github.com/pete-fathom/nbgn-fe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              <i className="fab fa-github mr-2"></i>
+              Frontend
+            </a>
+            <a
+              href="https://github.com/pete-fathom/nbgn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              <i className="fab fa-github mr-2"></i>
+              Contract
+            </a>
+          </div>
         </div>
       </footer>
     </div>

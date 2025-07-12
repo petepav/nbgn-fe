@@ -525,6 +525,39 @@ button {
   margin: 0 4px;
 }
 
+/* Footer Links */
+.footer-links {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--bg-green);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.footer-link:hover {
+  color: var(--text-white);
+  background: var(--bg-green);
+  border-color: var(--bg-green);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-green);
+  text-decoration: none;
+}
+
 /* Version Info */
 .version-info {
   background: var(--bg-white);
@@ -686,6 +719,17 @@ button {
   
   .disclaimer-content p {
     margin-bottom: 12px;
+  }
+  
+  .footer-links {
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  
+  .footer-link {
+    font-size: 13px;
+    padding: 6px 12px;
   }
   
   .disclaimer-page {
