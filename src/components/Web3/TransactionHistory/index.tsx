@@ -22,7 +22,6 @@ interface Transaction {
 }
 
 interface TransactionHistoryProps {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onNavigateToSend?: (address: string) => void;
 }
 
@@ -442,7 +441,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                           }`}
                           title={
                             copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
-                              ? 'Copied!' 
+                              ? 'Копирано!' 
                               : 'Copy address'
                           }
                         >
@@ -451,7 +450,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                               ? 'fa-check' 
                               : 'fa-copy'
                           } mr-1`}></i>
-                          {copiedAddress === (tx.type === 'sent' ? tx.to : tx.from) ? 'Copied!' : 'Copy'}
+                          {copiedAddress === (tx.type === 'sent' ? tx.to : tx.from) ? 'Копирано!' : 'Копирай'}
                         </button>
                       </div>
                     </div>

@@ -34,12 +34,12 @@ export const TransactionStatus: React.FC<Props> = ({ status, hash, error }) => {
           </p>
           {hash && (
             <a 
-              href={`https://etherscan.io/tx/${hash}`}
+              href={`https://arbiscan.io/tx/${hash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-yellow-600 hover:text-yellow-700 text-sm underline mt-1 inline-block"
             >
-              View on Etherscan
+              View on Arbiscan
             </a>
           )}
           {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
