@@ -23,79 +23,139 @@ export const TransactionHistory: React.FC = () => {
   const formatNBGN = useNBGNFormatter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalFound, setTotalFound] = useState(0);
+  const TRANSACTIONS_PER_PAGE = 20;
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user.address || !web3.provider) return;
+  const fetchTransactions = async (page = 0, append = false) => {
+    if (!user.address || !web3.provider) return;
 
-      let contract;
-      try {
+    let contract;
+    try {
+      if (page === 0) {
         setLoading(true);
-        contract = await getContract();
-        if (!contract) return;
+        setTransactions([]);
+        setCurrentPage(0);
+        setTotalFound(0);
+      } else {
+        setLoadingMore(true);
+      }
 
-        // Get the current block number
-        const currentBlock = await web3.provider.getBlockNumber();
+      contract = await getContract();
+      if (!contract) return;
 
-        // Query Transfer events where user is sender or receiver
-        // Look back 50000 blocks (approximately 7-10 days on Arbitrum)
-        const fromBlock = Math.max(0, currentBlock - 50000);
+      // Get the current block number
+      const currentBlock = await web3.provider.getBlockNumber();
 
-        // Create filters for sent and received transactions
-        const sentFilter = contract.filters.Transfer(user.address, null);
-        const receivedFilter = contract.filters.Transfer(null, user.address);
+      // For comprehensive history, we'll fetch in chunks from deployment block
+      // Start from a reasonable deployment block (you can adjust this)
+      const deploymentBlock = 150000000; // Approximate NBGN deployment block on Arbitrum
+      const fromBlock = Math.max(deploymentBlock, currentBlock - 1000000); // Look back up to 1M blocks
 
-        // Fetch events
-        const [sentEvents, receivedEvents] = await Promise.all([
-          contract.queryFilter(sentFilter, fromBlock, currentBlock),
-          contract.queryFilter(receivedFilter, fromBlock, currentBlock),
-        ]);
+      // Create filters for sent and received transactions
+      const sentFilter = contract.filters.Transfer(user.address, null);
+      const receivedFilter = contract.filters.Transfer(null, user.address);
 
-        // Process events into transactions
-        const processedTxs: Transaction[] = [];
-        const seenHashes = new Set<string>();
+      // Fetch events in batches to avoid RPC limits
+      const batchSize = 100000; // 100k blocks per batch
+      const allEvents = [];
 
-        // Combine all events and remove duplicates
-        const allEvents = [...sentEvents, ...receivedEvents];
+      for (
+        let startBlock = fromBlock;
+        startBlock <= currentBlock;
+        startBlock += batchSize
+      ) {
+        const endBlock = Math.min(startBlock + batchSize - 1, currentBlock);
 
-        for (const event of allEvents) {
-          if (
-            'args' in event &&
-            !seenHashes.has(event.transactionHash) &&
-            Array.isArray(event.args)
-          ) {
-            seenHashes.add(event.transactionHash);
-            const block = await web3.provider.getBlock(event.blockNumber);
-            const args = event.args as string[];
-            processedTxs.push({
-              hash: event.transactionHash,
-              from: args[0],
-              to: args[1],
-              value: args[2].toString(),
-              blockNumber: event.blockNumber,
-              timestamp: block?.timestamp || 0,
-              type: getTransactionType(args[0], args[1], user.address) as
-                | 'sent'
-                | 'received'
-                | 'minted',
-            });
+        try {
+          const [sentBatch, receivedBatch] = await Promise.all([
+            contract.queryFilter(sentFilter, startBlock, endBlock),
+            contract.queryFilter(receivedFilter, startBlock, endBlock),
+          ]);
+
+          allEvents.push(...sentBatch, ...receivedBatch);
+        } catch {
+          // If batch fails, try smaller chunks
+          continue;
+        }
+      }
+
+      // Process events into transactions
+      const processedTxs: Transaction[] = [];
+      const seenHashes = new Set<string>();
+
+      for (const event of allEvents) {
+        if (
+          'args' in event &&
+          !seenHashes.has(event.transactionHash) &&
+          Array.isArray(event.args)
+        ) {
+          seenHashes.add(event.transactionHash);
+          const args = event.args as string[];
+          processedTxs.push({
+            hash: event.transactionHash,
+            from: args[0],
+            to: args[1],
+            value: args[2].toString(),
+            blockNumber: event.blockNumber,
+            timestamp: 0, // We'll fetch timestamps on demand
+            type: getTransactionType(args[0], args[1], user.address) as
+              | 'sent'
+              | 'received'
+              | 'minted',
+          });
+        }
+      }
+
+      // Sort by block number (most recent first)
+      processedTxs.sort((a, b) => b.blockNumber - a.blockNumber);
+
+      setTotalFound(processedTxs.length);
+
+      // Paginate results
+      const startIndex = page * TRANSACTIONS_PER_PAGE;
+      const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
+      const paginatedTxs = processedTxs.slice(startIndex, endIndex);
+
+      // Fetch timestamps for the current page
+      for (const tx of paginatedTxs) {
+        if (tx.timestamp === 0) {
+          try {
+            const block = await web3.provider.getBlock(tx.blockNumber);
+            tx.timestamp = block?.timestamp || 0;
+          } catch {
+            tx.timestamp = 0;
           }
         }
-
-        // Sort by block number (most recent first)
-        processedTxs.sort((a, b) => b.blockNumber - a.blockNumber);
-
-        // Limit to most recent 50 transactions
-        setTransactions(processedTxs.slice(0, 50));
-      } catch {
-        // Silent error handling for now
-      } finally {
-        setLoading(false);
       }
-    };
 
-    void fetchTransactions();
-  }, [getContract, user.address, web3.provider]);
+      if (append) {
+        setTransactions(prev => [...prev, ...paginatedTxs]);
+      } else {
+        setTransactions(paginatedTxs);
+      }
+
+      setCurrentPage(page);
+      setHasMore(endIndex < processedTxs.length);
+    } catch {
+      // Silent error handling
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreTransactions = () => {
+    if (!loadingMore && hasMore) {
+      void fetchTransactions(currentPage + 1, true);
+    }
+  };
+
+  useEffect(() => {
+    void fetchTransactions(0, false);
+  }, [user.address, web3.provider, getContract]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(38)}`;
@@ -146,12 +206,20 @@ export const TransactionHistory: React.FC = () => {
 
   return (
     <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-lg">
-      <h3 className="text-xl font-bold mb-4 text-gray-800">
-        <i className="fas fa-clock-rotate-left mr-2 text-green-600"></i>
-        {t('web3:transaction.history', 'Transaction History')}
-      </h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-bold text-gray-800">
+          <i className="fas fa-clock-rotate-left mr-2 text-green-600"></i>
+          {t('web3:transaction.history', 'Transaction History')}
+        </h3>
+        {totalFound > 0 && (
+          <span className="text-sm text-gray-500">
+            {totalFound} {totalFound === 1 ? 'transaction' : 'transactions'}{' '}
+            found
+          </span>
+        )}
+      </div>
 
-      {transactions.length === 0 ? (
+      {!loading && transactions.length === 0 ? (
         <p className="text-gray-500 text-center py-8">
           {t('web3:transaction.noHistory', 'No transactions yet')}
         </p>
@@ -234,6 +302,36 @@ export const TransactionHistory: React.FC = () => {
               </div>
             );
           })}
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={loadMoreTransactions}
+                disabled={loadingMore}
+                className="bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-chevron-down mr-2"></i>
+                    Load More Transactions
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Show current progress */}
+          {transactions.length > 0 && totalFound > 0 && (
+            <div className="mt-4 text-center text-sm text-gray-500">
+              Showing {transactions.length} of {totalFound} transactions
+            </div>
+          )}
         </div>
       )}
     </div>
