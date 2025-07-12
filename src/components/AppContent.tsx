@@ -23,6 +23,14 @@ export const AppContent: React.FC = () => {
           <LanguageSwitcher />
         </div>
         <h1>{t('common:welcome')}</h1>
+
+        <div className="info-nav">
+          <a href="/info" className="info-nav-link">
+            <i className="fas fa-book-open mr-2"></i>
+            Информация и упътване 📖
+          </a>
+        </div>
+
         <WalletConnect />
 
         {user.address && (
@@ -94,12 +102,8 @@ export const AppContent: React.FC = () => {
           <p className="disclaimer-short">
             ⚠️ nbgn е частен токен, няма връзка с БНБ или официалната валута.
             Участието е изцяло на собствен риск.
-            <a href="/info" className="disclaimer-link">
-              Информация и гид 📖
-            </a>
-            <span className="link-separator"> • </span>
             <a href="/disclaimer" className="disclaimer-link">
-              Пълен дисклеймър 🔗
+              Виж пълния дисклеймър тук. 🔗
             </a>
           </p>
         </div>
