@@ -49,6 +49,7 @@ body {
   border-left: 4px solid var(--bg-green);
   border-right: 4px solid var(--bg-red);
   box-shadow: 0 0 50px var(--shadow-light);
+  padding-bottom: 80px;
 }
 
 /* Bulgarian flag accent strip */
@@ -411,7 +412,7 @@ button {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-top: 3px solid var(--bg-green);
   padding: 32px 20px;
-  margin-top: 80px;
+  margin-top: auto;
   text-align: left;
   color: var(--text-primary);
   font-size: 14px;
