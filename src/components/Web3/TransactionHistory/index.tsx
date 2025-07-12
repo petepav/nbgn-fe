@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNBGN } from '../../../hooks/useNBGN';
 import { useAppState } from '../../../contexts/AppContext';
@@ -22,6 +22,7 @@ interface Transaction {
 }
 
 interface TransactionHistoryProps {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onNavigateToSend?: (address: string) => void;
 }
 
@@ -37,22 +38,49 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalFound, setTotalFound] = useState(0);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const TRANSACTIONS_PER_PAGE = 20;
 
+  // Copy address to clipboard with visual feedback
+  const copyToClipboard = async (address: string) => {
+    try {
+      // eslint-disable-next-line no-undef
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(address);
+      // Clear the feedback after 2 seconds
+      // eslint-disable-next-line no-undef
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch {
+      // Fallback for older browsers
+      // eslint-disable-next-line no-undef
+      const textArea = document.createElement('textarea');
+      textArea.value = address;
+      // eslint-disable-next-line no-undef
+      document.body.appendChild(textArea);
+      textArea.select();
+      // eslint-disable-next-line no-undef
+      document.execCommand('copy');
+      // eslint-disable-next-line no-undef
+      document.body.removeChild(textArea);
+      setCopiedAddress(address);
+      // eslint-disable-next-line no-undef
+      setTimeout(() => setCopiedAddress(null), 2000);
+    }
+  };
+
   // Helper function to get EURe contract
-  const getEUReContract = async () => {
+  const getEUReContract = useCallback(async () => {
     if (!web3.provider || !environment.eureAddress) return null;
     try {
       const signer = await web3.provider.getSigner();
       return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
-    } catch (error) {
-      console.error('Failed to get EURe contract:', error);
+    } catch {
       return null;
     }
-  };
+  }, [web3.provider]);
 
   // Function to enrich transactions with EURe amounts and transaction fees
-  const enrichTransactionsWithDetails = async (transactions: Transaction[]) => {
+  const enrichTransactionsWithDetails = useCallback(async (transactions: Transaction[]) => {
     if (!web3.provider) return;
 
     for (const tx of transactions) {
@@ -95,17 +123,17 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                 tx.eureAmount = ethers.formatUnits(eureArgs[2], 18);
               }
             }
-          } catch (error) {
-            console.error('Failed to fetch EURe amount for transaction:', tx.hash, error);
+          } catch {
+            // Silent error handling for EURe amount fetching
           }
         }
-      } catch (error) {
-        console.error('Failed to enrich transaction:', tx.hash, error);
+      } catch {
+        // Silent error handling for transaction enrichment
       }
     }
-  };
+  }, [web3.provider, getEUReContract]);
 
-  const fetchTransactions = async (page = 0, append = false) => {
+  const fetchTransactions = useCallback(async (page = 0, append = false) => {
     if (!user.address || !web3.provider) return;
 
     let contract;
@@ -224,7 +252,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [user.address, web3.provider, getContract, enrichTransactionsWithDetails]);
 
   const loadMoreTransactions = () => {
     if (!loadingMore && hasMore) {
@@ -234,7 +262,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
 
   useEffect(() => {
     void fetchTransactions(0, false);
-  }, [user.address, web3.provider, getContract]);
+  }, [fetchTransactions]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(38)}`;
@@ -383,20 +411,43 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                 </div>
                 {typeConfig.addressLabel && (
                   <div className="text-sm text-gray-600 pl-13">
-                    <p>
-                      {typeConfig.addressLabel}{' '}
-                      {onNavigateToSend ? (
+                    <div className="flex items-center gap-2">
+                      <span>{typeConfig.addressLabel}</span>
+                      <div className="flex items-center gap-1">
+                        {onNavigateToSend ? (
+                          <button
+                            onClick={() => onNavigateToSend(tx.type === 'sent' ? tx.to : tx.from)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                            title="Click to send to this address"
+                          >
+                            {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                          </button>
+                        ) : (
+                          <span className="font-medium">
+                            {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                          </span>
+                        )}
                         <button
-                          onClick={() => onNavigateToSend(tx.type === 'sent' ? tx.to : tx.from)}
-                          className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
-                          title="Click to send to this address"
+                          onClick={() => copyToClipboard(tx.type === 'sent' ? tx.to : tx.from)}
+                          className={`ml-1 p-1 rounded hover:bg-gray-100 transition-colors ${
+                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
+                              ? 'text-green-600' 
+                              : 'text-gray-400 hover:text-gray-600'
+                          }`}
+                          title={
+                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
+                              ? 'Copied!' 
+                              : 'Copy address'
+                          }
                         >
-                          {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                          <i className={`fas ${
+                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
+                              ? 'fa-check' 
+                              : 'fa-copy'
+                          } text-xs`}></i>
                         </button>
-                      ) : (
-                        formatAddress(tx.type === 'sent' ? tx.to : tx.from)
-                      )}
-                    </p>
+                      </div>
+                    </div>
                   </div>
                 )}
                 
