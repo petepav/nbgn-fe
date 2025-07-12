@@ -59,21 +59,25 @@ export const TransactionHistory: React.FC = () => {
         const allEvents = [...sentEvents, ...receivedEvents];
 
         for (const event of allEvents) {
-          if ('args' in event && !seenHashes.has(event.transactionHash)) {
+          if (
+            'args' in event &&
+            !seenHashes.has(event.transactionHash) &&
+            Array.isArray(event.args)
+          ) {
             seenHashes.add(event.transactionHash);
             const block = await web3.provider.getBlock(event.blockNumber);
+            const args = event.args as string[];
             processedTxs.push({
               hash: event.transactionHash,
-              from: event.args[0],
-              to: event.args[1],
-              value: event.args[2].toString(),
+              from: args[0],
+              to: args[1],
+              value: args[2].toString(),
               blockNumber: event.blockNumber,
               timestamp: block?.timestamp || 0,
-              type: getTransactionType(
-                event.args[0],
-                event.args[1],
-                user.address
-              ) as 'sent' | 'received' | 'minted',
+              type: getTransactionType(args[0], args[1], user.address) as
+                | 'sent'
+                | 'received'
+                | 'minted',
             });
           }
         }
