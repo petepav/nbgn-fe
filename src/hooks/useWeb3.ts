@@ -176,12 +176,51 @@ export const useWeb3 = () => {
     void autoConnect();
   }, [connectWallet, provider]);
 
+  const switchToArbitrum = useCallback(async () => {
+    if (!rawProvider) return;
+    
+    try {
+      await rawProvider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0xa4b1' }], // Arbitrum One chain ID in hex
+      });
+    } catch (switchError: unknown) {
+      // This error code indicates that the chain has not been added to MetaMask
+      if ((switchError as any)?.code === 4902) {
+        try {
+          await rawProvider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0xa4b1',
+                chainName: 'Arbitrum One',
+                nativeCurrency: {
+                  name: 'Ethereum',
+                  symbol: 'ETH',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+                blockExplorerUrls: ['https://arbiscan.io/'],
+              },
+            ],
+          });
+        } catch {
+          // Failed to add Arbitrum network
+        }
+      } else {
+        // Failed to switch to Arbitrum
+      }
+    }
+  }, [rawProvider]);
+
   return { 
     provider, 
     account, 
+    chainId,
     loading, 
     isReconnecting, 
     connectWallet: (isAutoReconnect?: boolean) => connectWallet(isAutoReconnect), 
-    disconnectWallet 
+    disconnectWallet,
+    switchToArbitrum
   };
 };

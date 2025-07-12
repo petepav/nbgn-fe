@@ -5,14 +5,17 @@ import { NBGNTransfer } from './Web3/NBGNTransfer';
 import { NBGNExchange } from './Web3/NBGNExchange';
 import { NBGNRedeem } from './Web3/NBGNRedeem';
 import { TransactionHistory } from './Web3/TransactionHistory';
+import { ChainWarning } from './Web3/ChainWarning';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
 import { MobileWarning } from './MobileWarning';
 import { useAppState } from '../contexts/AppContext';
+import { useWeb3 } from '../hooks/useWeb3';
 
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAppState();
+  const { chainId, switchToArbitrum } = useWeb3();
   const [activeWidget, setActiveWidget] = useState<
     'send' | 'history' | 'exchange' | 'redeem'
   >('send');
@@ -51,6 +54,8 @@ export const AppContent: React.FC = () => {
 
         {user.address && (
           <div className="mt-8 w-full max-w-2xl">
+            {/* Chain Warning */}
+            <ChainWarning currentChainId={chainId} onSwitchChain={switchToArbitrum} />
             {/* Widget Toggle Buttons */}
             <div className="flex justify-center gap-3 mb-8 flex-wrap">
               <button
