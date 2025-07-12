@@ -83,9 +83,6 @@ export const WalletConnect: React.FC = () => {
                 />
               </div>
             </div>
-            <p className="text-xs text-gray-500 text-center mb-4">
-              Scan to send NBGN to this address
-            </p>
 
             <div className="flex items-center justify-center gap-3 mb-3">
               <p className="address text-sm font-mono">
