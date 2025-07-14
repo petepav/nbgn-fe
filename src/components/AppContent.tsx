@@ -44,10 +44,16 @@ export const AppContent: React.FC = () => {
         <h1>{t('common:welcome')}</h1>
 
         <div className="info-nav">
-          <a href="/info" className="info-nav-link">
-            <i className="fas fa-book-open mr-2"></i>
-            Информация и упътване 📖
-          </a>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href="/info" className="info-nav-link">
+              <i className="fas fa-book-open mr-2"></i>
+              Информация и упътване 📖
+            </a>
+            <a href="/ramp" className="info-nav-link bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
+              <i className="fas fa-credit-card mr-2"></i>
+              Buy NBGN with Fiat 💳
+            </a>
+          </div>
         </div>
 
         <MobileWarning />

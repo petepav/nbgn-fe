@@ -17,6 +17,16 @@ export default [
         ecmaFeatures: { jsx: true },
         project: './tsconfig.json',
       },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        alert: 'readonly',
+        fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': typescript,

@@ -33,7 +33,10 @@ export const useWeb3 = () => {
   const dispatch = useAppDispatch();
 
   const handleAccountsChanged = useCallback((accounts: string[]) => {
+    console.log('🔄 Account change detected:', accounts);
+    
     if (accounts.length === 0) {
+      console.log('🚫 No accounts - disconnecting');
       // Clear local state when accounts are disconnected
       web3Modal.clearCachedProvider();
       clearWalletConnection(); // Clear our custom storage too
@@ -42,9 +45,31 @@ export const useWeb3 = () => {
       setRawProvider(null);
       dispatch({ type: 'DISCONNECT' });
     } else {
-      setAccount(accounts[0]);
+      // Update account and refresh user state
+      const newAccount = accounts[0];
+      console.log('👤 New account:', newAccount, 'Previous:', account);
+      
+      // Always update to ensure state consistency
+      setAccount(newAccount);
+      
+      // Update global state with new address immediately
+      dispatch({
+        type: 'SET_USER',
+        payload: { 
+          address: newAccount, 
+          balance: '0' // Will be updated by useNBGN hook
+        }
+      });
+
+      // Force refresh of Web3 connection state to trigger re-renders
+      dispatch({
+        type: 'SET_WEB3',
+        payload: { connected: true, provider }
+      });
+      
+      console.log('✅ Account updated in global state');
     }
-  }, [dispatch]);
+  }, [dispatch, account, provider]);
 
   const handleChainChanged = useCallback(async (chainHex: string) => {
     const newChainId = parseInt(chainHex, 16);
@@ -90,8 +115,16 @@ export const useWeb3 = () => {
         payload: { connected: true, provider }
       });
 
+      // Remove any existing listeners first
+      if (connection.removeAllListeners) {
+        connection.removeAllListeners("accountsChanged");
+        connection.removeAllListeners("chainChanged");
+      }
+      
+      // Add fresh listeners
       connection.on("accountsChanged", handleAccountsChanged);
       connection.on("chainChanged", handleChainChanged);
+      console.log('🎧 Event listeners attached for account/chain changes');
       
     } catch (error) {
       // eslint-disable-next-line no-console, no-undef

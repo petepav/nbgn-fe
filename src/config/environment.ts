@@ -2,7 +2,7 @@ const config = {
   development: {
     apiUrl: process.env.REACT_APP_API_URL || 'http://localhost:3001',
     network: 'arbitrum',
-    contractAddress: process.env.REACT_APP_CONTRACT_ADDRESS || '0xF5834Af69E2772604132f796f6ee08fd0f83C28a',
+    contractAddress: process.env.REACT_APP_CONTRACT_ADDRESS || '0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067',
     eureAddress: '0x0c06cCF38114ddfc35e07427B9424adcca9F44F8',
   },
   preview: {
@@ -14,7 +14,7 @@ const config = {
   production: {
     apiUrl: process.env.REACT_APP_API_URL || 'https://api.example.com',
     network: 'arbitrum',
-    contractAddress: '0xF5834Af69E2772604132f796f6ee08fd0f83C28a',
+    contractAddress: '0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067',
     eureAddress: '0x0c06cCF38114ddfc35e07427B9424adcca9F44F8',
   }
 };

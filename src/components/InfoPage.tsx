@@ -127,7 +127,7 @@ export const InfoPage: React.FC = () => {
                 Добави NBGN ръчно, за да виждаш баланса в портфейла си:
                 <br />
                 <code className="contract-address">
-                  0xF5834Af69E2772604132f796f6ee08fd0f83C28a
+                  0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067
                 </code>
               </p>
             </div>
@@ -224,7 +224,7 @@ export const InfoPage: React.FC = () => {
           <div className="info-card">
             <div className="contact-links">
               <a
-                href="https://arbiscan.io/token/0xF5834Af69E2772604132f796f6ee08fd0f83C28a"
+                href="https://arbiscan.io/token/0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-link"
