@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { WalletConnect } from './Web3/WalletConnect';
 import { NBGNTransfer } from './Web3/NBGNTransfer';
 import { NBGNExchange } from './Web3/NBGNExchange';
@@ -44,10 +45,28 @@ export const AppContent: React.FC = () => {
         <h1>{t('common:welcome')}</h1>
 
         <div className="info-nav">
-          <a href="/info" className="info-nav-link">
-            <i className="fas fa-book-open mr-2"></i>
-            Информация и упътване 📖
-          </a>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+            }}
+          >
+            <Link to="/info" className="info-nav-link">
+              <i className="fas fa-book-open mr-2"></i>
+              Информация и упътване 📖
+            </Link>
+            {user.address && (
+              <Link
+                to="/ramp"
+                className="info-nav-link bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
+              >
+                <i className="fas fa-credit-card mr-2"></i>
+                Купи NBGN с карта 💳
+              </Link>
+            )}
+          </div>
         </div>
 
         <MobileWarning />
