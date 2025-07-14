@@ -1,192 +1,364 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect } from 'react';
 import { useAppState } from '../contexts/AppContext';
 import { useWeb3 } from '../hooks/useWeb3';
 import { WalletConnect } from './Web3/WalletConnect';
 import { ChainWarning } from './Web3/ChainWarning';
-import { USDCSwap } from './Web3/USDCSwap';
+import { useAutoSwap } from '../hooks/useAutoSwap';
+import { useRampSwap } from '../hooks/useRampSwap';
 
 export const RampPage: React.FC = () => {
-  const { t } = useTranslation();
   const { user } = useAppState();
   const { chainId, switchToArbitrum } = useWeb3();
-  const [activeTab, setActiveTab] = useState<'buy' | 'swap'>('buy');
+  const [showWidget, setShowWidget] = useState(false);
+  const [usdcBalance, setUsdcBalance] = useState('0');
+  const [checkingBalance, setCheckingBalance] = useState(true);
+  const { isMonitoring, swapStatus, startMonitoring, stopMonitoring } =
+    useAutoSwap();
+  const {
+    getUSDCBalance,
+    swapUSDCToNBGN,
+    loading: swapLoading,
+  } = useRampSwap();
 
-  const openTransak = () => {
+  const openFiatRamp = () => {
     if (!user.address) {
-      alert('Please connect your wallet first');
+      alert('Моля, свържете първо портфейла си');
       return;
     }
-
-    const transakUrl = `https://global.transak.com/?` + 
-      `apiKey=${process.env.REACT_APP_TRANSAK_API_KEY || 'YOUR_API_KEY'}&` +
-      `network=arbitrum&` +
-      `cryptoCurrencyCode=USDC&` +
-      `defaultCryptoAmount=20&` +
-      `walletAddress=${user.address}&` +
-      `hideMenu=true&` +
-      `themeColor=00966F`;
-    
-    window.open(transakUrl, '_blank');
+    setShowWidget(true);
+    // Start monitoring for new USDC to auto-convert
+    void startMonitoring();
   };
 
+  const getKadoUrl = () => {
+    if (!user.address) return '';
+
+    // Kado Money - pre-configured for USDC on Arbitrum with locked selections
+    const kadoParams = new URLSearchParams({
+      onToAddress: user.address,
+      onCurrency: 'USDC',
+      onNetwork: 'ARBITRUM',
+      offCurrency: 'EUR',
+      offAmount: '50',
+      mode: 'minimal',
+      theme: 'light',
+      lockCurrency: 'true',
+      lockNetwork: 'true',
+      hideOtherCurrencies: 'true',
+    });
+
+    return `https://app.kado.money?${kadoParams.toString()}`;
+  };
+
+  // Check USDC balance on wallet connection
+  useEffect(() => {
+    const checkUSDCBalance = async () => {
+      if (user.address) {
+        setCheckingBalance(true);
+        try {
+          const balance = await getUSDCBalance(user.address);
+          setUsdcBalance(balance);
+        } catch (error) {
+          console.error('Error checking USDC balance:', error);
+        } finally {
+          setCheckingBalance(false);
+        }
+      } else {
+        setUsdcBalance('0');
+        setCheckingBalance(false);
+      }
+    };
+
+    void checkUSDCBalance();
+  }, [user.address, getUSDCBalance]);
+
+  useEffect(() => {
+    // Clean up monitoring when component unmounts
+    return () => {
+      stopMonitoring();
+    };
+  }, [stopMonitoring]);
+
+  const handleContinueConversion = async () => {
+    try {
+      await swapUSDCToNBGN(usdcBalance);
+      // Refresh balance after conversion
+      const newBalance = await getUSDCBalance(user.address!);
+      setUsdcBalance(newBalance);
+    } catch (error) {
+      console.error('Conversion failed:', error);
+      alert('Конвертацията неуспешна. Моля опитайте отново.');
+    }
+  };
+
+  const hasUSDC = parseFloat(usdcBalance) > 0.01; // More than 1 cent
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                <i className="fas fa-exchange-alt mr-3 text-green-600"></i>
-                NBGN Ramp
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Buy USDC with fiat or swap existing USDC to NBGN
-              </p>
-            </div>
-            <a
-              href="/"
-              className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <i className="fas fa-arrow-left mr-2"></i>
-              Back to App
-            </a>
+    <div className="ramp-page">
+      {/* Warning Banner */}
+      <div className="ramp-warning-banner">
+        <div className="ramp-warning-content">
+          <i className="fas fa-exclamation-triangle"></i>
+          <div className="ramp-warning-text">
+            <strong>ВНИМАНИЕ:</strong> Фиат покупките са в експериментален
+            режим. Използвайте само малки суми за тестване. Не сме отговорни за
+            загуби.
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Wallet Connection */}
-        <div className="mb-8">
-          <WalletConnect />
+      {/* Simple Header */}
+      <div className="ramp-header">
+        <div className="ramp-header-content">
+          <div>
+            <h1>
+              <i className="fas fa-credit-card"></i>
+              Купи NBGN
+            </h1>
+            <p className="ramp-header-subtitle">
+              Директно с дебитна/кредитна карта
+            </p>
+          </div>
+          <a href="/" className="ramp-back-link">
+            <i className="fas fa-arrow-left mr-2"></i>
+            Назад
+          </a>
         </div>
+      </div>
+
+      <div className="ramp-container">
+        {/* Wallet Connection */}
+        {!user.address && (
+          <div className="ramp-wallet-card">
+            <div className="ramp-wallet-icon">
+              <i className="fas fa-wallet"></i>
+            </div>
+            <h2>Свържете портфейла си</h2>
+            <p>
+              Необходимо е да свържете портфейла си за да купите NBGN токени
+            </p>
+            <WalletConnect />
+          </div>
+        )}
 
         {user.address && (
           <>
             {/* Chain Warning */}
-            <div className="mb-8">
-              <ChainWarning currentChainId={chainId} onSwitchChain={switchToArbitrum} />
+            <div style={{ marginBottom: '24px' }}>
+              <ChainWarning
+                currentChainId={chainId}
+                onSwitchChain={switchToArbitrum}
+              />
             </div>
 
-            {/* Tab Navigation */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="flex border-b border-gray-200">
-                <button
-                  onClick={() => setActiveTab('buy')}
-                  className={`flex-1 px-6 py-4 text-lg font-semibold transition-colors ${
-                    activeTab === 'buy'
-                      ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <i className="fas fa-credit-card mr-2"></i>
-                  Buy USDC with Fiat
-                </button>
-                <button
-                  onClick={() => setActiveTab('swap')}
-                  className={`flex-1 px-6 py-4 text-lg font-semibold transition-colors ${
-                    activeTab === 'swap'
-                      ? 'bg-green-50 text-green-700 border-b-2 border-green-500'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <i className="fas fa-sync-alt mr-2"></i>
-                  Swap USDC to NBGN
-                </button>
-              </div>
-
-              <div className="p-8">
-                {activeTab === 'buy' && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                        Buy USDC with Credit Card
-                      </h2>
-                      <p className="text-gray-600 mb-8">
-                        Purchase USDC directly to your Arbitrum wallet using fiat currency
-                      </p>
+            {/* Main Purchase Card */}
+            <div className="ramp-main-card">
+              {!showWidget ? (
+                <div className="ramp-card-content">
+                  {checkingBalance ? (
+                    <div className="ramp-checking-balance">
+                      <div className="ramp-spinner"></div>
+                      <h2>Проверяваме USDC баланса...</h2>
                     </div>
-
-                    {/* Step-by-step guide */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-                      <h3 className="text-lg font-semibold text-blue-900 mb-4">
-                        <i className="fas fa-route mr-2"></i>
-                        How it works
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
-                          <span className="text-blue-800">Buy USDC with your credit card via Transak</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
-                          <span className="text-blue-800">USDC arrives in your connected wallet on Arbitrum</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
-                          <span className="text-blue-800">Switch to "Swap" tab to convert USDC → NBGN</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Transak Button */}
-                    <div className="text-center">
-                      <button
-                        onClick={openTransak}
-                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  ) : hasUSDC ? (
+                    <>
+                      {/* User has USDC - show continue conversion */}
+                      <div
+                        className="ramp-coin-icon"
+                        style={{ backgroundColor: '#10B981' }}
                       >
-                        <i className="fas fa-credit-card mr-3"></i>
-                        Buy USDC with Transak
-                      </button>
-                      <p className="text-sm text-gray-500 mt-4">
-                        Powered by Transak • KYC required for larger amounts
-                      </p>
-                    </div>
+                        <i className="fas fa-check-circle"></i>
+                      </div>
 
-                    {/* Alternative Methods */}
-                    <div className="border-t border-gray-200 pt-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        Alternative Methods
-                      </h3>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-gray-900 mb-2">
-                            <i className="fas fa-building mr-2 text-gray-600"></i>
-                            CEX Transfer
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            Buy USDC on Coinbase, Binance, etc. and withdraw to Arbitrum
-                          </p>
-                        </div>
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-gray-900 mb-2">
-                            <i className="fas fa-bridge mr-2 text-gray-600"></i>
-                            Bridge from L1
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            Bridge USDC from Ethereum mainnet using Arbitrum bridge
-                          </p>
+                      <h2>USDC намерен!</h2>
+
+                      <p>
+                        Намерихме {parseFloat(usdcBalance).toFixed(2)} USDC в
+                        портфейла ви. Продължете с автоматичната конвертация в
+                        NBGN токени.
+                      </p>
+
+                      <div className="ramp-balance-display">
+                        <div className="ramp-balance-item">
+                          <span className="ramp-balance-label">
+                            Налични USDC:
+                          </span>
+                          <span className="ramp-balance-value">
+                            {parseFloat(usdcBalance).toFixed(2)} USDC
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
 
-                {activeTab === 'swap' && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                        Convert USDC to NBGN
-                      </h2>
-                      <p className="text-gray-600 mb-8">
-                        Swap your USDC for NBGN tokens via EURe at the official rate
+                      <button
+                        onClick={handleContinueConversion}
+                        className="ramp-continue-button"
+                        disabled={swapLoading}
+                      >
+                        {swapLoading ? (
+                          <>
+                            <div className="ramp-button-spinner"></div>
+                            Конвертиране...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-arrow-right"></i>
+                            Продължи с конвертация в NBGN
+                          </>
+                        )}
+                      </button>
+
+                      <div className="ramp-conversion-note">
+                        <i className="fas fa-info-circle"></i>
+                        Автоматично: USDC → EURe → NBGN
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* No USDC - show normal flow */}
+                      <div className="ramp-coin-icon">
+                        <i className="fas fa-coins"></i>
+                      </div>
+
+                      <h2>Купете NBGN токени</h2>
+
+                      <p>
+                        Купете NBGN токени директно с дебитна или кредитна
+                        карта. Процесът е бърз, сигурен и автоматичен.
                       </p>
-                    </div>
+                    </>
+                  )}
 
-                    <USDCSwap />
+                  {/* Auto-conversion status */}
+                  {isMonitoring && (
+                    <div className="ramp-status-box">
+                      <div className="ramp-spinner"></div>
+                      <span className="ramp-status-text">
+                        {swapStatus === 'detecting' &&
+                          'Следим за покупка на USDC...'}
+                        {swapStatus === 'swapping' &&
+                          'Конвертираме USDC в NBGN...'}
+                        {swapStatus === 'completed' &&
+                          'Готово! NBGN токените са в портфейла ви'}
+                        {swapStatus === 'error' &&
+                          'Грешка при конвертация - опитайте ръчно'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Show automatic process only if no USDC */}
+                  {!hasUSDC && !checkingBalance && (
+                    <>
+                      {/* Maximally Automatic Process */}
+                      <div className="ramp-automatic-process">
+                        <h3>
+                          <i className="fas fa-magic"></i>
+                          Напълно автоматичен процес!
+                        </h3>
+                        <div className="ramp-automatic-box">
+                          <div className="ramp-automatic-item">
+                            <div className="ramp-automatic-icon">💳</div>
+                            <div className="ramp-automatic-text">
+                              <strong>
+                                Само въведете данните на картата си
+                              </strong>
+                              <p>Всичко останало се случва автоматично</p>
+                            </div>
+                          </div>
+                          <div className="ramp-automatic-arrow">→</div>
+                          <div className="ramp-automatic-item">
+                            <div className="ramp-automatic-icon">🔄</div>
+                            <div className="ramp-automatic-text">
+                              <strong>Автоматична конвертация</strong>
+                              <p>EUR → USDC → EURe → NBGN</p>
+                            </div>
+                          </div>
+                          <div className="ramp-automatic-arrow">→</div>
+                          <div className="ramp-automatic-item">
+                            <div className="ramp-automatic-icon">🎉</div>
+                            <div className="ramp-automatic-text">
+                              <strong>NBGN в портфейла ви!</strong>
+                              <p>Готово за 30-60 секунди</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ramp-automatic-note">
+                          <i className="fas fa-bolt"></i>
+                          Мониторинг на всеки 5 секунди за най-бърза конвертация
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={openFiatRamp}
+                        className="ramp-buy-button"
+                      >
+                        <i className="fas fa-credit-card"></i>
+                        Купи NBGN с карта
+                      </button>
+
+                      <p className="ramp-supported-text">
+                        Поддържани са карти от България и ЕС
+                      </p>
+                    </>
+                  )}
+
+                  {/* Resume monitoring button for users who already used fiat ramp */}
+                  {hasUSDC && (
+                    <div className="ramp-resume-section">
+                      <p className="ramp-resume-text">
+                        <i className="fas fa-lightbulb"></i>
+                        Или купете още USDC за повече NBGN токени:
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowWidget(true);
+                          void startMonitoring();
+                        }}
+                        className="ramp-resume-button"
+                        disabled={isMonitoring}
+                      >
+                        <i className="fas fa-plus"></i>
+                        {isMonitoring
+                          ? 'Мониторингът е активен'
+                          : 'Купи още USDC'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div className="ramp-widget-header">
+                    <h3>Купете NBGN токени - Kado</h3>
+                    <button
+                      onClick={() => setShowWidget(false)}
+                      className="ramp-close-button"
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
                   </div>
-                )}
+
+                  <div className="ramp-widget-container">
+                    <iframe
+                      src={getKadoUrl()}
+                      className="ramp-widget-iframe"
+                      frameBorder="0"
+                      allow="payment; usb; ethereum; web3"
+                      title="Купете NBGN токени"
+                      sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Info Section */}
+            <div className="ramp-info-box">
+              <i className="fas fa-shield-alt"></i>
+              <div className="ramp-info-content">
+                <h3>Сигурна и надеждна покупка</h3>
+                <p>
+                  Използваме водещи платформи за сигурни криптовалутни покупки.
+                  Вашите данни са защитени и транзакциите са шифровани.
+                </p>
               </div>
             </div>
           </>
