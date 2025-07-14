@@ -87,15 +87,31 @@ export const NBGNExchange: React.FC = () => {
       }
       
       try {
+        console.log('Calculating expected NBGN for amount:', eureAmount);
         const nbgnContract = await getContract();
-        if (!nbgnContract) return;
+        if (!nbgnContract) {
+          console.error('No NBGN contract available');
+          return;
+        }
         
+        console.log('Contract address:', environment.contractAddress);
         const eureAmountWei = ethers.parseUnits(eureAmount, 18);
+        console.log('EURe amount in wei:', eureAmountWei.toString());
+        
         const expected = await nbgnContract.calculateNBGN(eureAmountWei);
-        setExpectedNBGN(ethers.formatUnits(expected, 18));
+        console.log('Expected NBGN from contract:', expected.toString());
+        
+        const formattedExpected = ethers.formatUnits(expected, 18);
+        console.log('Formatted expected NBGN:', formattedExpected);
+        
+        setExpectedNBGN(formattedExpected);
       } catch (error) {
         console.error('Failed to calculate expected NBGN:', error);
-        setExpectedNBGN('0');
+        
+        // Fallback calculation: 1 EUR = 1.95583 NBGN (fixed rate)
+        const fallbackNBGN = (parseFloat(eureAmount) * 1.95583).toString();
+        console.log('Using fallback calculation:', fallbackNBGN);
+        setExpectedNBGN(fallbackNBGN);
       }
     };
 
