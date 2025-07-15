@@ -17,7 +17,9 @@ export const RampPage: React.FC = () => {
     useAutoSwap();
   const {
     getUSDCBalance,
-    swapUSDCToNBGN,
+    getEUReBalance,
+    swapUSDCToEURe,
+    mintNBGNFromEURe,
     loading: swapLoading,
   } = useRampSwap();
 
@@ -80,15 +82,42 @@ export const RampPage: React.FC = () => {
     };
   }, [stopMonitoring]);
 
-  const handleContinueConversion = async () => {
+  const handleStep1USDCToEURe = async () => {
     try {
-      await swapUSDCToNBGN(usdcBalance);
+      await swapUSDCToEURe(usdcBalance);
       // Refresh balance after conversion
       const newBalance = await getUSDCBalance(user.address!);
       setUsdcBalance(newBalance);
+      alert(
+        '✅ Стъпка 1 завършена! USDC конвертиран в EURe. Сега натиснете Стъпка 2.'
+      );
     } catch (error) {
-      console.error('Conversion failed:', error);
-      alert('Конвертацията неуспешна. Моля опитайте отново.');
+      console.error('Step 1 failed:', error);
+      alert(
+        'Стъпка 1 неуспешна. Моля опитайте отново или използвайте Exchange секцията.'
+      );
+    }
+  };
+
+  const handleStep2EUReToNBGN = async () => {
+    try {
+      // Get EURe balance first
+      const eureBalance = await getEUReBalance(user.address!);
+      if (parseFloat(eureBalance) < 0.01) {
+        alert('Няма достатъчно EURe. Моля първо изпълнете Стъпка 1.');
+        return;
+      }
+
+      await mintNBGNFromEURe(eureBalance);
+      // Refresh balance after conversion
+      const newBalance = await getUSDCBalance(user.address!);
+      setUsdcBalance(newBalance);
+      alert('🎉 Готово! EURe конвертиран в NBGN токени!');
+    } catch (error) {
+      console.error('Step 2 failed:', error);
+      alert(
+        'Стъпка 2 неуспешна. Моля опитайте отново или използвайте Exchange секцията.'
+      );
     }
   };
 
@@ -190,27 +219,47 @@ export const RampPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <button
-                        onClick={handleContinueConversion}
-                        className="ramp-continue-button"
-                        disabled={swapLoading}
-                      >
-                        {swapLoading ? (
-                          <>
-                            <div className="ramp-button-spinner"></div>
-                            Конвертиране...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fas fa-arrow-right"></i>
-                            Продължи с конвертация в NBGN
-                          </>
-                        )}
-                      </button>
+                      <div className="ramp-two-step-buttons">
+                        <button
+                          onClick={handleStep1USDCToEURe}
+                          className="ramp-step-button"
+                          disabled={swapLoading}
+                        >
+                          {swapLoading ? (
+                            <>
+                              <div className="ramp-button-spinner"></div>
+                              Стъпка 1...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-exchange-alt"></i>
+                              Стъпка 1: USDC → EURe
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={handleStep2EUReToNBGN}
+                          className="ramp-step-button"
+                          disabled={swapLoading}
+                        >
+                          {swapLoading ? (
+                            <>
+                              <div className="ramp-button-spinner"></div>
+                              Стъпка 2...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-coins"></i>
+                              Стъпка 2: EURe → NBGN
+                            </>
+                          )}
+                        </button>
+                      </div>
 
                       <div className="ramp-conversion-note">
                         <i className="fas fa-info-circle"></i>
-                        Автоматично: USDC → EURe → NBGN
+                        Процес в 2 стъпки: USDC → EURe → NBGN
                       </div>
                     </>
                   ) : (
