@@ -257,19 +257,19 @@ export const RampPage: React.FC = () => {
                         </button>
                       </div>
 
-                      <div className="ramp-alternative-options" style={{
+                      <div className="ramp-liquidity-note" style={{
                         marginTop: '20px',
                         padding: '15px',
-                        backgroundColor: '#fff3cd',
+                        backgroundColor: '#e3f2fd',
                         borderRadius: '8px',
-                        border: '1px solid #ffeeba',
+                        border: '1px solid #90caf9',
                         fontSize: '14px'
                       }}>
                         <h4 style={{margin: '0 0 10px 0', fontSize: '16px'}}>
-                          ⚠️ USDC → EURe автоматичната обмяна временно не работи
+                          ℹ️ Важна информация за ликвидността
                         </h4>
                         <p style={{margin: '0 0 10px 0'}}>
-                          Алтернативни опции:
+                          EURe ликвидността на Arbitrum е ограничена. Ако автоматичната обмяна не работи:
                         </p>
                         <ol style={{margin: '10px 0', paddingLeft: '20px'}}>
                           <li>Купете EURe директно от <a href="https://monerium.com" target="_blank" rel="noopener noreferrer" style={{color: '#007bff'}}>Monerium</a></li>

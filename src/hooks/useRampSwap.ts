@@ -14,8 +14,10 @@ const CONTRACTS = {
   USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // USDT on Arbitrum One
   WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // WETH on Arbitrum One
   UNISWAP_V3_ROUTER: '0xE592427A0AEce92De3Edee1F18E0157C05861564', // Uniswap V3 Router
-  CURVE_ROUTER: '0xF0d4c12A5768D806021F80a262B4d39d26C58b8D', // Curve Router v1.0 on Arbitrum
-  // Note: According to DefiLlama, Curve has €1.45m EURe/USDC liquidity on Arbitrum
+  CURVE_ROUTER_NG: '0x2191718CD32d02B8E60BAdFFeA33E4B5DD9A0A0D', // Curve Router-NG on Arbitrum (current version)
+  CURVE_META_REGISTRY: '0x13526206545e2DC7CcfBaF28dC88F440ce7AD3e0', // Curve MetaRegistry for pool discovery
+  CURVE_STABLE_FACTORY_HANDLER: '0x39FFd8A06E80c12AC9151c57b72E709b0d735B9f', // StableFactory Handler
+  // Note: According to experts, EURe liquidity on Arbitrum is very limited (~$3.5k Uniswap, uncertain Curve)
 };
 
 // ERC20 ABI (minimal)
@@ -42,10 +44,19 @@ const NBGN_ABI = [
 //   'function exactInput((bytes path, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum)) external payable returns (uint256 amountOut)',
 // ];
 
-// Curve Router ABI for token swaps
-const CURVE_ROUTER_ABI = [
-  'function exchange(address[6] _route, uint256[8] _swap_params, uint256 _amount, uint256 _expected) payable returns (uint256)',
-  'function get_exchange_amount(address[6] _route, uint256[8] _swap_params, uint256 _amount) view returns (uint256)',
+// Curve MetaRegistry ABI for pool discovery
+const CURVE_META_REGISTRY_ABI = [
+  'function find_pools_for_coins(address _from, address _to) view returns (address[] memory)',
+  'function find_pool_for_coins(address _from, address _to, uint256 i) view returns (address)',
+  'function get_n_coins(address _pool) view returns (uint256)',
+  'function get_coin_indices(address _pool, address _from, address _to) view returns (int128, int128, bool)',
+];
+
+// Curve Pool ABI for direct interaction
+const CURVE_POOL_ABI = [
+  'function get_dy(int128 i, int128 j, uint256 dx) view returns (uint256)',
+  'function exchange(int128 i, int128 j, uint256 _dx, uint256 _min_dy) returns (uint256)',
+  'function coins(uint256 arg0) view returns (address)',
 ];
 
 export const useRampSwap = () => {
@@ -161,7 +172,7 @@ export const useRampSwap = () => {
   //   return encoded;
   // };
 
-  // Swap USDC to EURe using Curve Finance
+  // Swap USDC to EURe using Curve Finance with MetaRegistry discovery
   const swapUSDCToEURe = useCallback(
     async (usdcAmount: string, slippageTolerance: number = 5) => {
       if (!web3.provider) throw new Error('No provider available');
@@ -179,18 +190,114 @@ export const useRampSwap = () => {
           throw new Error('Insufficient USDC balance');
         }
 
-        // The issue: While EURe has €1.45m liquidity on Curve Arbitrum,
-        // we cannot automatically route through it without the specific pool address
-        // The Curve Router isn't finding the EURe/USDC pool automatically
-        
-        throw new Error(
-          'USDC към EURe автоматичната обмяна временно не е налична. ' +
-          'Моля опитайте една от следните опции:\n\n' +
-          '1. Купете EURe директно с карта през Monerium\n' +
-          '2. Използвайте 1inch или друг DEX aggregator\n' +
-          '3. Търгувайте ръчно на Curve Finance (arbitrum.curve.fi)'
+        // Step 1: Try to find pool using MetaRegistry
+        console.log('Searching for EURe/USDC pool using Curve MetaRegistry...');
+        const metaRegistry = new ethers.Contract(
+          CONTRACTS.CURVE_META_REGISTRY,
+          CURVE_META_REGISTRY_ABI,
+          web3.provider
         );
+
+        let poolAddress: string | null = null;
+        
+        try {
+          // Find pool for USDC -> EURe
+          poolAddress = await metaRegistry.find_pool_for_coins(
+            CONTRACTS.USDC,
+            CONTRACTS.EURE,
+            0 // first pool
+          );
+          console.log('Found pool via MetaRegistry:', poolAddress);
+        } catch (err) {
+          console.log('MetaRegistry search failed:', err);
+        }
+
+        // If no pool found, try reverse order (EURe -> USDC)
+        if (!poolAddress || poolAddress === ethers.ZeroAddress) {
+          try {
+            poolAddress = await metaRegistry.find_pool_for_coins(
+              CONTRACTS.EURE,
+              CONTRACTS.USDC,
+              0
+            );
+            console.log('Found pool via MetaRegistry (reversed):', poolAddress);
+          } catch (err) {
+            console.log('Reverse MetaRegistry search failed:', err);
+          }
+        }
+
+        // If still no pool, check all pools containing these coins
+        if (!poolAddress || poolAddress === ethers.ZeroAddress) {
+          try {
+            const pools = await metaRegistry.find_pools_for_coins(
+              CONTRACTS.USDC,
+              CONTRACTS.EURE
+            );
+            if (pools && pools.length > 0) {
+              poolAddress = pools[0];
+              console.log('Found pools:', pools);
+            }
+          } catch (err) {
+            console.log('Pool array search failed:', err);
+          }
+        }
+
+        // If no pool found after all attempts, throw error
+        if (!poolAddress || poolAddress === ethers.ZeroAddress) {
+          throw new Error(
+            'Не може да се намери EURe/USDC pool на Curve. ' +
+            'Експертите съобщават, че ликвидността на EURe е много ограничена (~$3.5k). ' +
+            'Моля използвайте алтернативните опции показани по-долу.'
+          );
+        }
+
+        // Step 2: Get coin indices for the pool
+        const indices = await metaRegistry.get_coin_indices(
+          poolAddress,
+          CONTRACTS.USDC,
+          CONTRACTS.EURE
+        );
+        const i = indices[0];
+        const j = indices[1];
+        
+        console.log(`Pool ${poolAddress} indices: USDC=${i}, EURe=${j}`);
+
+        // Step 3: Interact with the pool directly
+        const pool = new ethers.Contract(poolAddress, CURVE_POOL_ABI, signer);
+
+        // Check and approve USDC for the pool
+        const allowance = await checkAllowance(
+          CONTRACTS.USDC,
+          userAddress,
+          poolAddress
+        );
+        if (parseFloat(allowance) < parseFloat(usdcAmount)) {
+          console.log('Approving USDC for Curve pool...');
+          await approveToken(CONTRACTS.USDC, poolAddress, usdcAmount);
+        }
+
+        const amountIn = ethers.parseUnits(usdcAmount, 6); // USDC has 6 decimals
+        
+        // Get expected output
+        const expectedOut = await pool.get_dy(i, j, amountIn);
+        const minOut = expectedOut * BigInt(100 - slippageTolerance) / BigInt(100);
+
+        console.log('Executing swap on Curve pool...');
+        console.log(`Amount in: ${usdcAmount} USDC`);
+        console.log(`Expected out: ${ethers.formatEther(expectedOut)} EURe`);
+        console.log(`Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`);
+
+        // Execute the swap
+        const tx = await pool.exchange(i, j, amountIn, minOut);
+        const receipt = await tx.wait();
+
+        console.log('✅ Curve swap successful!');
+        return {
+          hash: tx.hash,
+          eureReceived: ethers.formatEther(expectedOut),
+        };
       } catch (err) {
+        console.error('Swap failed:', err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
         throw err;
       } finally {
@@ -243,7 +350,7 @@ export const useRampSwap = () => {
 
         return {
           hash: tx.hash,
-          nbgnMinted: await nbgnContract.calculateNBGN(eureAmountWei),
+          nbgnMinted: await nbgnContract.calculateNbgnAmount(eureAmountWei),
         };
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
