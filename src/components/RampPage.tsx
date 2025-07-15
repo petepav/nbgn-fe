@@ -91,9 +91,27 @@ export const RampPage: React.FC = () => {
       alert(
         '✅ Стъпка 1 завършена! USDC конвертиран в EURe. Сега натиснете Стъпка 2.'
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Step 1 failed:', error);
-      alert('Стъпка 1 неуспешна. Моля опитайте отново.');
+
+      // Check if it's a liquidity issue
+      if (
+        error.message?.includes('Не може да се изчисли очаквания резултат') ||
+        error.message?.includes('insufficient liquidity')
+      ) {
+        alert(
+          '❌ Curve pool няма достатъчна ликвидност за тази транзакция.\n\n' +
+            'Алтернативни опции:\n' +
+            '1. Купете EURe директно от Monerium (https://monerium.com)\n' +
+            '2. Използвайте по-малка сума\n' +
+            '3. Опитайте отново по-късно\n\n' +
+            'След като имате EURe, използвайте бутона "Купи NBGN" за директна конверсия.'
+        );
+      } else {
+        alert(
+          'Стъпка 1 неуспешна. ' + (error.message || 'Моля опитайте отново.')
+        );
+      }
     }
   };
 

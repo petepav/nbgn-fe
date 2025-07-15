@@ -277,8 +277,62 @@ export const useRampSwap = () => {
 
         const amountIn = ethers.parseUnits(usdcAmount, 6); // USDC has 6 decimals
 
-        // Get expected output
-        const expectedOut = await pool.get_dy(i, j, amountIn);
+        // First, verify the pool has the correct coins at the expected indices
+        try {
+          const coin0 = await pool.coins(Number(i));
+          const coin1 = await pool.coins(Number(j));
+          console.log(`Pool coins: ${i}=${coin0}, ${j}=${coin1}`);
+
+          // Verify the coins match what we expect
+          if (
+            coin0.toLowerCase() !== CONTRACTS.USDC.toLowerCase() ||
+            coin1.toLowerCase() !== CONTRACTS.EURE.toLowerCase()
+          ) {
+            throw new Error('Pool coin configuration mismatch');
+          }
+        } catch (err) {
+          console.error('Error verifying pool coins:', err);
+        }
+
+        // Get expected output with error handling
+        let expectedOut: bigint;
+        try {
+          // First try with a small test amount to check if pool is functional
+          const testAmount = ethers.parseUnits('1', 6); // 1 USDC
+          try {
+            await pool.get_dy(i, j, testAmount);
+          } catch (testErr) {
+            console.error('Pool test failed with 1 USDC:', testErr);
+            throw new Error('Pool is not functional or has no liquidity');
+          }
+
+          // Now try with the actual amount
+          expectedOut = await pool.get_dy(i, j, amountIn);
+          console.log(
+            `Expected output: ${ethers.formatEther(expectedOut)} EURe`
+          );
+
+          // Check if output is reasonable (not 0 or extremely low)
+          if (expectedOut === BigInt(0)) {
+            throw new Error('Pool returned 0 output - insufficient liquidity');
+          }
+
+          // Check if output is suspiciously low (less than 50% of input value)
+          const expectedMinimum = (amountIn * BigInt(50)) / BigInt(100);
+          if (expectedOut < expectedMinimum) {
+            console.warn(
+              `Warning: Very low output. Expected at least ${ethers.formatEther(expectedMinimum)} EURe`
+            );
+          }
+        } catch (err) {
+          console.error('Error getting expected output:', err);
+          throw new Error(
+            'Не може да се изчисли очаквания резултат от swap. ' +
+              'Вероятно няма достатъчна ликвидност в pool-а. ' +
+              'Алтернатива: Купете EURe директно от Monerium.'
+          );
+        }
+
         const minOut =
           (expectedOut * BigInt(100 - slippageTolerance)) / BigInt(100);
 
@@ -289,15 +343,41 @@ export const useRampSwap = () => {
           `Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`
         );
 
-        // Execute the swap
-        const tx = await pool.exchange(i, j, amountIn, minOut);
-        await tx.wait();
+        // Execute the swap with proper error handling
+        try {
+          const tx = await pool.exchange(i, j, amountIn, minOut, {
+            gasLimit: 500000, // Add explicit gas limit
+          });
+          await tx.wait();
 
-        console.log('✅ Curve swap successful!');
-        return {
-          hash: tx.hash,
-          eureReceived: ethers.formatEther(expectedOut),
-        };
+          console.log('✅ Curve swap successful!');
+          return {
+            hash: tx.hash,
+            eureReceived: ethers.formatEther(expectedOut),
+          };
+        } catch (swapErr: any) {
+          console.error('Exchange transaction failed:', swapErr);
+
+          // Check for specific error conditions
+          if (swapErr.message?.includes('INSUFFICIENT_OUTPUT_AMOUNT')) {
+            throw new Error(
+              'Swap failed: Insufficient output amount. The pool may have low liquidity.'
+            );
+          } else if (swapErr.message?.includes('INSUFFICIENT_LIQUIDITY')) {
+            throw new Error('Swap failed: Insufficient liquidity in the pool.');
+          } else {
+            throw new Error(
+              'Swap транзакцията се провали. Вероятни причини:\n' +
+                '1. Недостатъчна ликвидност в Curve pool\n' +
+                '2. Твърде голям размер на транзакцията\n' +
+                '3. Промяна в цената по време на транзакцията\n\n' +
+                'Алтернативи:\n' +
+                '• Опитайте с по-малка сума\n' +
+                '• Увеличете slippage tolerance\n' +
+                '• Купете EURe директно от Monerium и използвайте "Купи NBGN"'
+            );
+          }
+        }
       } catch (err) {
         console.error('Swap failed:', err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');

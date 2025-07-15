@@ -57,15 +57,6 @@ export const AppContent: React.FC = () => {
               <i className="fas fa-book-open mr-2"></i>
               Информация и упътване 📖
             </Link>
-            {user.address && (
-              <Link
-                to="/ramp"
-                className="info-nav-link bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
-              >
-                <i className="fas fa-credit-card mr-2"></i>
-                Купи NBGN с карта 💳
-              </Link>
-            )}
           </div>
         </div>
 
