@@ -2231,6 +2231,37 @@ button {
   font-size: 18px;
 }
 
+/* Waiting Note */
+.ramp-waiting-note {
+  background: #fefbff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ramp-waiting-note i {
+  color: #6b7280;
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ramp-waiting-note p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ramp-waiting-note strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 /* Utility classes */
 .mr-2 {
   margin-right: 8px;
