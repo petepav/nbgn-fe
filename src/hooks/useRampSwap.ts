@@ -138,10 +138,12 @@ export const useRampSwap = () => {
 
     let encoded = '0x';
     tokens.forEach((token, index) => {
-      encoded += token.slice(2); // Remove 0x prefix
-      if (index < fees.length) {
-        // eslint-disable-next-line security/detect-object-injection
-        encoded += fees[index].toString(16).padStart(FEE_SIZE * 2, '0');
+      if (token) {
+        encoded += token.slice(2); // Remove 0x prefix
+        if (index < fees.length && fees[index] !== undefined) {
+          const feeHex = fees[index].toString(16).padStart(FEE_SIZE * 2, '0');
+          encoded += feeHex;
+        }
       }
     });
     return encoded;
