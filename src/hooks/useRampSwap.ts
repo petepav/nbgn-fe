@@ -14,6 +14,8 @@ const CONTRACTS = {
   USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // USDT on Arbitrum One
   WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // WETH on Arbitrum One
   UNISWAP_V3_ROUTER: '0xE592427A0AEce92De3Edee1F18E0157C05861564', // Uniswap V3 Router
+  CURVE_ROUTER: '0xF0d4c12A5768D806021F80a262B4d39d26C58b8D', // Curve Router v1.0 on Arbitrum
+  // Note: According to DefiLlama, Curve has €1.45m EURe/USDC liquidity on Arbitrum
 };
 
 // ERC20 ABI (minimal)
@@ -27,15 +29,23 @@ const ERC20_ABI = [
 
 // NBGN Contract ABI
 const NBGN_ABI = [
-  'function mint(uint256 _eureAmount) returns (uint256)',
-  'function calculateNBGN(uint256 _eureAmount) view returns (uint256)',
-  'function getConversionRate() view returns (uint256, uint256)',
+  'function mint(uint256 eureAmount) returns (uint256)',
+  'function calculateNbgnAmount(uint256 eureAmount) view returns (uint256)',
+  'function calculateEureAmount(uint256 nbgnAmount) view returns (uint256)',
+  'function getReserveRatio() view returns (uint256)',
+  'function redeem(uint256 nbgnAmount) returns (uint256)',
 ];
 
-// Uniswap V3 Router ABI (minimal)
-const UNISWAP_ROUTER_ABI = [
-  'function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
-  'function exactInput((bytes path, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum)) external payable returns (uint256 amountOut)',
+// Uniswap V3 Router ABI (minimal) - commented out as we're using Curve instead
+// const UNISWAP_ROUTER_ABI = [
+//   'function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
+//   'function exactInput((bytes path, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum)) external payable returns (uint256 amountOut)',
+// ];
+
+// Curve Router ABI for token swaps
+const CURVE_ROUTER_ABI = [
+  'function exchange(address[6] _route, uint256[8] _swap_params, uint256 _amount, uint256 _expected) payable returns (uint256)',
+  'function get_exchange_amount(address[6] _route, uint256[8] _swap_params, uint256 _amount) view returns (uint256)',
 ];
 
 export const useRampSwap = () => {
@@ -132,24 +142,26 @@ export const useRampSwap = () => {
     [web3.provider]
   );
 
-  // Helper function to encode multi-hop path
-  const encodePath = (tokens: string[], fees: number[]) => {
-    const FEE_SIZE = 3;
+  // Helper function to encode multi-hop path - commented out as we're using Curve instead
+  // const encodePath = (tokens: string[], fees: number[]) => {
+  //   const FEE_SIZE = 3;
+  //
+  //   let encoded = '0x';
+  //   for (let index = 0; index < tokens.length; index++) {
+  //     const token = tokens[index];
+  //     if (token) {
+  //       encoded += token.slice(2); // Remove 0x prefix
+  //       const fee = fees[index];
+  //       if (index < fees.length && fee !== undefined) {
+  //         const feeHex = fee.toString(16).padStart(FEE_SIZE * 2, '0');
+  //         encoded += feeHex;
+  //       }
+  //     }
+  //   }
+  //   return encoded;
+  // };
 
-    let encoded = '0x';
-    tokens.forEach((token, index) => {
-      if (token) {
-        encoded += token.slice(2); // Remove 0x prefix
-        if (index < fees.length && fees[index] !== undefined) {
-          const feeHex = fees[index].toString(16).padStart(FEE_SIZE * 2, '0');
-          encoded += feeHex;
-        }
-      }
-    });
-    return encoded;
-  };
-
-  // Swap USDC to EURe using multiple routes
+  // Swap USDC to EURe using Curve Finance
   const swapUSDCToEURe = useCallback(
     async (usdcAmount: string, slippageTolerance: number = 5) => {
       if (!web3.provider) throw new Error('No provider available');
@@ -167,133 +179,78 @@ export const useRampSwap = () => {
           throw new Error('Insufficient USDC balance');
         }
 
-        // Check USDC allowance for Uniswap router
+        // Try Curve Finance which has €1.45m EURe/USDC liquidity on Arbitrum
+        const curveRouter = new ethers.Contract(
+          CONTRACTS.CURVE_ROUTER,
+          CURVE_ROUTER_ABI,
+          signer
+        );
+
+        // Check USDC allowance for Curve Router
         const allowance = await checkAllowance(
           CONTRACTS.USDC,
           userAddress,
-          CONTRACTS.UNISWAP_V3_ROUTER
+          CONTRACTS.CURVE_ROUTER
         );
         if (parseFloat(allowance) < parseFloat(usdcAmount)) {
           // Need to approve first
           await approveToken(
             CONTRACTS.USDC,
-            CONTRACTS.UNISWAP_V3_ROUTER,
+            CONTRACTS.CURVE_ROUTER,
             usdcAmount
           );
         }
 
-        const router = new ethers.Contract(
-          CONTRACTS.UNISWAP_V3_ROUTER,
-          UNISWAP_ROUTER_ABI,
-          signer
-        );
         const amountIn = ethers.parseUnits(usdcAmount, 6); // USDC has 6 decimals
-        const amountOutMinimum = ethers.parseUnits(
-          (
-            (parseFloat(usdcAmount) * (100 - slippageTolerance)) /
-            100
-          ).toString(),
-          18 // EURe has 18 decimals
-        );
 
-        // Define multiple swap routes to try
-        const swapRoutes = [
-          // Route 1: Direct USDC -> EURe
-          {
-            name: 'Direct USDC->EURe',
-            method: 'single',
-            tokens: [CONTRACTS.USDC, CONTRACTS.EURE],
-            fees: [500, 3000, 10000], // Try different fee tiers
-          },
-          // Route 2: USDC -> USDT -> EURe
-          {
-            name: 'USDC->USDT->EURe',
-            method: 'multi',
-            tokens: [CONTRACTS.USDC, CONTRACTS.USDT, CONTRACTS.EURE],
-            fees: [500, 3000], // USDC->USDT and USDT->EURe fees
-          },
-          // Route 3: USDC -> WETH -> EURe
-          {
-            name: 'USDC->WETH->EURe',
-            method: 'multi',
-            tokens: [CONTRACTS.USDC, CONTRACTS.WETH, CONTRACTS.EURE],
-            fees: [500, 3000], // USDC->WETH and WETH->EURe fees
-          },
+        // Build route: [USDC, EURe, 0x0, 0x0, 0x0, 0x0]
+        const route = [
+          CONTRACTS.USDC,
+          CONTRACTS.EURE,
+          ethers.ZeroAddress,
+          ethers.ZeroAddress,
+          ethers.ZeroAddress,
+          ethers.ZeroAddress,
         ];
 
-        let lastError: Error | null = null;
+        // Swap params: [i, j, swap_type, pool_type, 0, 0, 0, 0]
+        // swap_type: 1 = exchange, pool_type: 1 = stableswap
+        const swapParams = [1, 0, 1, 1, 0, 0, 0, 0];
 
-        for (const route of swapRoutes) {
-          try {
-            console.log(`Trying route: ${route.name}`);
-
-            if (route.method === 'single') {
-              // Try direct swap with different fee tiers
-              for (const fee of route.fees) {
-                try {
-                  const swapParams = {
-                    tokenIn: route.tokens[0],
-                    tokenOut: route.tokens[1],
-                    fee: fee,
-                    recipient: userAddress,
-                    deadline: Math.floor(Date.now() / 1000) + 300,
-                    amountIn,
-                    amountOutMinimum,
-                    sqrtPriceLimitX96: 0,
-                  };
-
-                  console.log(`  Trying fee tier ${fee}...`);
-                  const tx = await router.exactInputSingle(swapParams);
-                  const receipt = await tx.wait();
-
-                  console.log(`✅ ${route.name} successful with fee ${fee}`);
-                  return {
-                    hash: tx.hash,
-                    eureReceived: ethers.formatEther(
-                      receipt.logs[receipt.logs.length - 1]?.data || '0'
-                    ),
-                  };
-                } catch (err) {
-                  console.log(`  Fee tier ${fee} failed:`, err);
-                  lastError = err as Error;
-                  continue;
-                }
-              }
-            } else {
-              // Try multi-hop swap
-              const path = encodePath(route.tokens, route.fees);
-              const swapParams = {
-                path: path,
-                recipient: userAddress,
-                deadline: Math.floor(Date.now() / 1000) + 300,
-                amountIn,
-                amountOutMinimum,
-              };
-
-              console.log(`  Trying multi-hop path...`);
-              const tx = await router.exactInput(swapParams);
-              const receipt = await tx.wait();
-
-              console.log(`✅ ${route.name} successful`);
-              return {
-                hash: tx.hash,
-                eureReceived: ethers.formatEther(
-                  receipt.logs[receipt.logs.length - 1]?.data || '0'
-                ),
-              };
-            }
-          } catch (err) {
-            console.log(`❌ Route ${route.name} failed:`, err);
-            lastError = err as Error;
-            continue;
-          }
+        // Get expected output
+        let expectedOut;
+        try {
+          expectedOut = await curveRouter.get_exchange_amount(route, swapParams, amountIn);
+        } catch (err) {
+          console.error('Curve router quote failed:', err);
+          throw new Error(
+            'USDC към EURe обмяната не е налична. ' +
+            'Моля използвайте Exchange секцията за ръчна обмяна.'
+          );
         }
 
-        // If all routes failed, throw the last error
-        throw (
-          lastError ||
-          new Error('No liquidity found for USDC/EURe on any route')
+        const minOut = expectedOut * BigInt(100 - slippageTolerance) / BigInt(100);
+
+        console.log('Swapping USDC to EURe via Curve Finance on Arbitrum');
+        console.log(`Amount in: ${usdcAmount} USDC`);
+        console.log(`Expected out: ${ethers.formatEther(expectedOut)} EURe`);
+        console.log(`Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`);
+
+        // Execute swap
+        const tx = await curveRouter.exchange(
+          route,
+          swapParams,
+          amountIn,
+          minOut,
+          { value: 0 } // No ETH needed for this swap
         );
+        await tx.wait();
+
+        console.log('✅ Curve swap successful!');
+        return {
+          hash: tx.hash,
+          eureReceived: ethers.formatEther(expectedOut),
+        };
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
         throw err;
@@ -402,7 +359,7 @@ export const useRampSwap = () => {
           web3.provider
         );
         const eureAmountWei = ethers.parseEther(eureAmount);
-        const nbgnAmount = await nbgnContract.calculateNBGN(eureAmountWei);
+        const nbgnAmount = await nbgnContract.calculateNbgnAmount(eureAmountWei);
         return ethers.formatEther(nbgnAmount);
       } catch (err) {
         console.error('Error calculating NBGN:', err);
