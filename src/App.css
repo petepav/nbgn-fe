@@ -1587,10 +1587,12 @@ button {
   margin: 0 0 16px 0;
   font-size: 14px;
   color: #1e40af;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.ramp-widget-help p i {
+  margin-right: 8px;
 }
 
 .ramp-home-button {

@@ -352,7 +352,8 @@ export const RampPage: React.FC = () => {
                     <p>
                       <i className="fas fa-clock"></i>
                       Поръчката обикновено отнема 10-15 минути за обработка.
-                      След получаване на USDC, можете да ги конвертирате в NBGN.
+                      След получаване на USDC, може да ги конвертирате в NBGN на
+                      тази страница.
                     </p>
                     <Link to="/" className="ramp-home-button">
                       <i className="fas fa-home"></i>
