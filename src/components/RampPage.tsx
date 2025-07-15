@@ -94,7 +94,7 @@ export const RampPage: React.FC = () => {
     } catch (error) {
       console.error('Step 1 failed:', error);
       alert(
-        'Стъпка 1 неуспешна. Моля опитайте отново или използвайте Exchange секцията.'
+        'Стъпка 1 неуспешна. Моля опитайте отново.'
       );
     }
   };
@@ -255,6 +255,27 @@ export const RampPage: React.FC = () => {
                             </>
                           )}
                         </button>
+                      </div>
+
+                      <div className="ramp-alternative-options" style={{
+                        marginTop: '20px',
+                        padding: '15px',
+                        backgroundColor: '#fff3cd',
+                        borderRadius: '8px',
+                        border: '1px solid #ffeeba',
+                        fontSize: '14px'
+                      }}>
+                        <h4 style={{margin: '0 0 10px 0', fontSize: '16px'}}>
+                          ⚠️ USDC → EURe автоматичната обмяна временно не работи
+                        </h4>
+                        <p style={{margin: '0 0 10px 0'}}>
+                          Алтернативни опции:
+                        </p>
+                        <ol style={{margin: '10px 0', paddingLeft: '20px'}}>
+                          <li>Купете EURe директно от <a href="https://monerium.com" target="_blank" rel="noopener noreferrer" style={{color: '#007bff'}}>Monerium</a></li>
+                          <li>Използвайте <a href="https://app.1inch.io/#/42161/simple/swap/USDC/EURe" target="_blank" rel="noopener noreferrer" style={{color: '#007bff'}}>1inch DEX</a></li>
+                          <li>Търгувайте на <a href="https://arbitrum.curve.fi" target="_blank" rel="noopener noreferrer" style={{color: '#007bff'}}>Curve Finance</a></li>
+                        </ol>
                       </div>
 
                       <div className="ramp-conversion-note">

@@ -179,78 +179,17 @@ export const useRampSwap = () => {
           throw new Error('Insufficient USDC balance');
         }
 
-        // Try Curve Finance which has €1.45m EURe/USDC liquidity on Arbitrum
-        const curveRouter = new ethers.Contract(
-          CONTRACTS.CURVE_ROUTER,
-          CURVE_ROUTER_ABI,
-          signer
+        // The issue: While EURe has €1.45m liquidity on Curve Arbitrum,
+        // we cannot automatically route through it without the specific pool address
+        // The Curve Router isn't finding the EURe/USDC pool automatically
+        
+        throw new Error(
+          'USDC към EURe автоматичната обмяна временно не е налична. ' +
+          'Моля опитайте една от следните опции:\n\n' +
+          '1. Купете EURe директно с карта през Monerium\n' +
+          '2. Използвайте 1inch или друг DEX aggregator\n' +
+          '3. Търгувайте ръчно на Curve Finance (arbitrum.curve.fi)'
         );
-
-        // Check USDC allowance for Curve Router
-        const allowance = await checkAllowance(
-          CONTRACTS.USDC,
-          userAddress,
-          CONTRACTS.CURVE_ROUTER
-        );
-        if (parseFloat(allowance) < parseFloat(usdcAmount)) {
-          // Need to approve first
-          await approveToken(
-            CONTRACTS.USDC,
-            CONTRACTS.CURVE_ROUTER,
-            usdcAmount
-          );
-        }
-
-        const amountIn = ethers.parseUnits(usdcAmount, 6); // USDC has 6 decimals
-
-        // Build route: [USDC, EURe, 0x0, 0x0, 0x0, 0x0]
-        const route = [
-          CONTRACTS.USDC,
-          CONTRACTS.EURE,
-          ethers.ZeroAddress,
-          ethers.ZeroAddress,
-          ethers.ZeroAddress,
-          ethers.ZeroAddress,
-        ];
-
-        // Swap params: [i, j, swap_type, pool_type, 0, 0, 0, 0]
-        // swap_type: 1 = exchange, pool_type: 1 = stableswap
-        const swapParams = [1, 0, 1, 1, 0, 0, 0, 0];
-
-        // Get expected output
-        let expectedOut;
-        try {
-          expectedOut = await curveRouter.get_exchange_amount(route, swapParams, amountIn);
-        } catch (err) {
-          console.error('Curve router quote failed:', err);
-          throw new Error(
-            'USDC към EURe обмяната не е налична. ' +
-            'Моля използвайте Exchange секцията за ръчна обмяна.'
-          );
-        }
-
-        const minOut = expectedOut * BigInt(100 - slippageTolerance) / BigInt(100);
-
-        console.log('Swapping USDC to EURe via Curve Finance on Arbitrum');
-        console.log(`Amount in: ${usdcAmount} USDC`);
-        console.log(`Expected out: ${ethers.formatEther(expectedOut)} EURe`);
-        console.log(`Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`);
-
-        // Execute swap
-        const tx = await curveRouter.exchange(
-          route,
-          swapParams,
-          amountIn,
-          minOut,
-          { value: 0 } // No ETH needed for this swap
-        );
-        await tx.wait();
-
-        console.log('✅ Curve swap successful!');
-        return {
-          hash: tx.hash,
-          eureReceived: ethers.formatEther(expectedOut),
-        };
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
         throw err;
