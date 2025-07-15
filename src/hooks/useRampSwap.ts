@@ -11,6 +11,8 @@ const CONTRACTS = {
     process.env.REACT_APP_EURE_ADDRESS ||
     '0x0c06cCF38114ddfc35e07427B9424adcca9F44F8',
   USDC: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // USDC on Arbitrum One
+  USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // USDT on Arbitrum One
+  WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // WETH on Arbitrum One
   UNISWAP_V3_ROUTER: '0xE592427A0AEce92De3Edee1F18E0157C05861564', // Uniswap V3 Router
 };
 
@@ -33,6 +35,7 @@ const NBGN_ABI = [
 // Uniswap V3 Router ABI (minimal)
 const UNISWAP_ROUTER_ABI = [
   'function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
+  'function exactInput((bytes path, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum)) external payable returns (uint256 amountOut)',
 ];
 
 export const useRampSwap = () => {
@@ -129,7 +132,22 @@ export const useRampSwap = () => {
     [web3.provider]
   );
 
-  // Swap USDC to EURe using Uniswap V3
+  // Helper function to encode multi-hop path
+  const encodePath = (tokens: string[], fees: number[]) => {
+    const FEE_SIZE = 3;
+
+    let encoded = '0x';
+    tokens.forEach((token, index) => {
+      encoded += token.slice(2); // Remove 0x prefix
+      if (index < fees.length) {
+        // eslint-disable-next-line security/detect-object-injection
+        encoded += fees[index].toString(16).padStart(FEE_SIZE * 2, '0');
+      }
+    });
+    return encoded;
+  };
+
+  // Swap USDC to EURe using multiple routes
   const swapUSDCToEURe = useCallback(
     async (usdcAmount: string, slippageTolerance: number = 5) => {
       if (!web3.provider) throw new Error('No provider available');
@@ -162,7 +180,6 @@ export const useRampSwap = () => {
           );
         }
 
-        // Prepare swap parameters
         const router = new ethers.Contract(
           CONTRACTS.UNISWAP_V3_ROUTER,
           UNISWAP_ROUTER_ABI,
@@ -177,45 +194,103 @@ export const useRampSwap = () => {
           18 // EURe has 18 decimals
         );
 
-        // Try different fee tiers in order of preference
-        const feeTiers = [500, 3000, 10000]; // 0.05%, 0.3%, 1%
+        // Define multiple swap routes to try
+        const swapRoutes = [
+          // Route 1: Direct USDC -> EURe
+          {
+            name: 'Direct USDC->EURe',
+            method: 'single',
+            tokens: [CONTRACTS.USDC, CONTRACTS.EURE],
+            fees: [500, 3000, 10000], // Try different fee tiers
+          },
+          // Route 2: USDC -> USDT -> EURe
+          {
+            name: 'USDC->USDT->EURe',
+            method: 'multi',
+            tokens: [CONTRACTS.USDC, CONTRACTS.USDT, CONTRACTS.EURE],
+            fees: [500, 3000], // USDC->USDT and USDT->EURe fees
+          },
+          // Route 3: USDC -> WETH -> EURe
+          {
+            name: 'USDC->WETH->EURe',
+            method: 'multi',
+            tokens: [CONTRACTS.USDC, CONTRACTS.WETH, CONTRACTS.EURE],
+            fees: [500, 3000], // USDC->WETH and WETH->EURe fees
+          },
+        ];
+
         let lastError: Error | null = null;
 
-        for (const feeTier of feeTiers) {
+        for (const route of swapRoutes) {
           try {
-            const swapParams = {
-              tokenIn: CONTRACTS.USDC,
-              tokenOut: CONTRACTS.EURE,
-              fee: feeTier,
-              recipient: userAddress,
-              deadline: Math.floor(Date.now() / 1000) + 300, // 5 minutes from now
-              amountIn,
-              amountOutMinimum,
-              sqrtPriceLimitX96: 0,
-            };
+            console.log(`Trying route: ${route.name}`);
 
-            console.log(`Trying swap with fee tier ${feeTier}...`);
-            const tx = await router.exactInputSingle(swapParams);
-            const receipt = await tx.wait();
+            if (route.method === 'single') {
+              // Try direct swap with different fee tiers
+              for (const fee of route.fees) {
+                try {
+                  const swapParams = {
+                    tokenIn: route.tokens[0],
+                    tokenOut: route.tokens[1],
+                    fee: fee,
+                    recipient: userAddress,
+                    deadline: Math.floor(Date.now() / 1000) + 300,
+                    amountIn,
+                    amountOutMinimum,
+                    sqrtPriceLimitX96: 0,
+                  };
 
-            console.log(`✅ Swap successful with fee tier ${feeTier}`);
-            return {
-              hash: tx.hash,
-              eureReceived: ethers.formatEther(
-                receipt.logs[receipt.logs.length - 1]?.data || '0'
-              ),
-            };
+                  console.log(`  Trying fee tier ${fee}...`);
+                  const tx = await router.exactInputSingle(swapParams);
+                  const receipt = await tx.wait();
+
+                  console.log(`✅ ${route.name} successful with fee ${fee}`);
+                  return {
+                    hash: tx.hash,
+                    eureReceived: ethers.formatEther(
+                      receipt.logs[receipt.logs.length - 1]?.data || '0'
+                    ),
+                  };
+                } catch (err) {
+                  console.log(`  Fee tier ${fee} failed:`, err);
+                  lastError = err as Error;
+                  continue;
+                }
+              }
+            } else {
+              // Try multi-hop swap
+              const path = encodePath(route.tokens, route.fees);
+              const swapParams = {
+                path: path,
+                recipient: userAddress,
+                deadline: Math.floor(Date.now() / 1000) + 300,
+                amountIn,
+                amountOutMinimum,
+              };
+
+              console.log(`  Trying multi-hop path...`);
+              const tx = await router.exactInput(swapParams);
+              const receipt = await tx.wait();
+
+              console.log(`✅ ${route.name} successful`);
+              return {
+                hash: tx.hash,
+                eureReceived: ethers.formatEther(
+                  receipt.logs[receipt.logs.length - 1]?.data || '0'
+                ),
+              };
+            }
           } catch (err) {
-            console.log(`❌ Fee tier ${feeTier} failed:`, err);
+            console.log(`❌ Route ${route.name} failed:`, err);
             lastError = err as Error;
             continue;
           }
         }
 
-        // If all fee tiers failed, throw the last error
+        // If all routes failed, throw the last error
         throw (
           lastError ||
-          new Error('No liquidity found for USDC/EURe pair on any fee tier')
+          new Error('No liquidity found for USDC/EURe on any route')
         );
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
