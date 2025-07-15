@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppState } from '../contexts/AppContext';
 import { useWeb3 } from '../hooks/useWeb3';
 import { WalletConnect } from './Web3/WalletConnect';
@@ -277,13 +278,13 @@ export const RampPage: React.FC = () => {
                             <div className="ramp-automatic-icon">🎉</div>
                             <div className="ramp-automatic-text">
                               <strong>NBGN в портфейла ви!</strong>
-                              <p>Готово за 30-60 секунди</p>
+                              <p>Готово за 10-15 минути</p>
                             </div>
                           </div>
                         </div>
                         <div className="ramp-automatic-note">
                           <i className="fas fa-bolt"></i>
-                          Мониторинг на всеки 5 секунди за най-бърза конвертация
+                          Мониторинг на всеки 5 секунди след получаване на USDC
                         </div>
                       </div>
 
@@ -349,10 +350,14 @@ export const RampPage: React.FC = () => {
 
                   <div className="ramp-widget-help">
                     <p>
-                      <i className="fas fa-info-circle"></i>
-                      Не виждате бутона "Next"? Скролирайте надолу във формата
-                      или опитайте да промените размера на прозореца.
+                      <i className="fas fa-clock"></i>
+                      Поръчката обикновено отнема 10-15 минути за обработка.
+                      След получаване на USDC, можете да ги конвертирате в NBGN.
                     </p>
+                    <Link to="/" className="ramp-home-button">
+                      <i className="fas fa-home"></i>
+                      Обратно към началото
+                    </Link>
                   </div>
                 </div>
               )}

@@ -1584,13 +1584,37 @@ button {
 }
 
 .ramp-widget-help p {
-  margin: 0;
+  margin: 0 0 16px 0;
   font-size: 14px;
   color: #1e40af;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.ramp-home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--bg-green) 0%, var(--bg-green-light) 100%);
+  color: var(--text-white);
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-green);
+}
+
+.ramp-home-button:hover {
+  background: linear-gradient(135deg, var(--bg-green-dark) 0%, var(--bg-green) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-green);
+  text-decoration: none;
+  color: var(--text-white);
 }
 
 .ramp-error-container {
