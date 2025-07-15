@@ -346,6 +346,14 @@ export const RampPage: React.FC = () => {
                       sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
                     />
                   </div>
+
+                  <div className="ramp-widget-help">
+                    <p>
+                      <i className="fas fa-info-circle"></i>
+                      Не виждате бутона "Next"? Скролирайте надолу във формата
+                      или опитайте да промените размера на прозореца.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
