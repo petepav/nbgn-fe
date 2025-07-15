@@ -280,8 +280,8 @@ export const RampPage: React.FC = () => {
                           >
                             Monerium
                           </a>{' '}
-                          и след това да използвате <strong>Exchange</strong>{' '}
-                          секцията на този сайт за да конвертирате EURe → NBGN.
+                          и след това да използвате <strong>Купи NBGN</strong>{' '}
+                          опцията на този сайт за да конвертирате EURe → NBGN.
                         </p>
                       </div>
 

@@ -246,7 +246,7 @@ export const useRampSwap = () => {
         if (!poolAddress || poolAddress === ethers.ZeroAddress) {
           throw new Error(
             'Не може да се намери EURe/USDC pool за автоматична конверсия. ' +
-              'Алтернатива: Купете EURe директно от Monerium и използвайте Exchange секцията за EURe → NBGN.'
+              'Алтернатива: Купете EURe директно от Monerium и използвайте опцията "Купи NBGN" за EURe → NBGN.'
           );
         }
 
