@@ -199,7 +199,7 @@ export const useRampSwap = () => {
         );
 
         let poolAddress: string | null = null;
-        
+
         try {
           // Find pool for USDC -> EURe
           poolAddress = await metaRegistry.find_pool_for_coins(
@@ -245,9 +245,8 @@ export const useRampSwap = () => {
         // If no pool found after all attempts, throw error
         if (!poolAddress || poolAddress === ethers.ZeroAddress) {
           throw new Error(
-            'Не може да се намери EURe/USDC pool на Curve. ' +
-            'Експертите съобщават, че ликвидността на EURe е много ограничена (~$3.5k). ' +
-            'Моля използвайте алтернативните опции показани по-долу.'
+            'Не може да се намери EURe/USDC pool за автоматична конверсия. ' +
+              'Алтернатива: Купете EURe директно от Monerium и използвайте Exchange секцията за EURe → NBGN.'
           );
         }
 
@@ -259,7 +258,7 @@ export const useRampSwap = () => {
         );
         const i = indices[0];
         const j = indices[1];
-        
+
         console.log(`Pool ${poolAddress} indices: USDC=${i}, EURe=${j}`);
 
         // Step 3: Interact with the pool directly
@@ -277,19 +276,22 @@ export const useRampSwap = () => {
         }
 
         const amountIn = ethers.parseUnits(usdcAmount, 6); // USDC has 6 decimals
-        
+
         // Get expected output
         const expectedOut = await pool.get_dy(i, j, amountIn);
-        const minOut = expectedOut * BigInt(100 - slippageTolerance) / BigInt(100);
+        const minOut =
+          (expectedOut * BigInt(100 - slippageTolerance)) / BigInt(100);
 
         console.log('Executing swap on Curve pool...');
         console.log(`Amount in: ${usdcAmount} USDC`);
         console.log(`Expected out: ${ethers.formatEther(expectedOut)} EURe`);
-        console.log(`Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`);
+        console.log(
+          `Min out (${slippageTolerance}% slippage): ${ethers.formatEther(minOut)} EURe`
+        );
 
         // Execute the swap
         const tx = await pool.exchange(i, j, amountIn, minOut);
-        const receipt = await tx.wait();
+        await tx.wait();
 
         console.log('✅ Curve swap successful!');
         return {
@@ -405,7 +407,8 @@ export const useRampSwap = () => {
           web3.provider
         );
         const eureAmountWei = ethers.parseEther(eureAmount);
-        const nbgnAmount = await nbgnContract.calculateNbgnAmount(eureAmountWei);
+        const nbgnAmount =
+          await nbgnContract.calculateNbgnAmount(eureAmountWei);
         return ethers.formatEther(nbgnAmount);
       } catch (err) {
         console.error('Error calculating NBGN:', err);
