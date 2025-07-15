@@ -282,10 +282,6 @@ export const RampPage: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="ramp-automatic-note">
-                          <i className="fas fa-bolt"></i>
-                          Мониторинг на всеки 5 секунди след получаване на USDC
-                        </div>
                       </div>
 
                       <button
