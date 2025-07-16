@@ -3,20 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { WalletConnect } from './Web3/WalletConnect';
 import { NBGNTransfer } from './Web3/NBGNTransfer';
-import { NBGNExchange } from './Web3/NBGNExchange';
-import { NBGNRedeem } from './Web3/NBGNRedeem';
+import { TokenExchange } from './Web3/TokenExchange';
+import { TokenRedeem } from './Web3/TokenRedeem';
 import { TransactionHistory } from './Web3/TransactionHistory';
-import { ChainWarning } from './Web3/ChainWarning';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
 import { MobileWarning } from './MobileWarning';
+import TokenSelector from './TokenSelector';
+import { NetworkWarning } from './NetworkWarning';
 import { useAppState } from '../contexts/AppContext';
 import { useWeb3 } from '../hooks/useWeb3';
 
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAppState();
-  const { chainId, switchToArbitrum } = useWeb3();
+  // const { chainId, switchToArbitrum } = useWeb3();
   const [activeWidget, setActiveWidget] = useState<
     'send' | 'history' | 'exchange' | 'redeem'
   >('send');
@@ -62,15 +63,17 @@ export const AppContent: React.FC = () => {
 
         <MobileWarning />
 
+        <div className="token-selector-container" style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <TokenSelector />
+        </div>
+
         <WalletConnect />
 
         {user.address && (
+          <>
           <div className="mt-8 w-full max-w-2xl">
-            {/* Chain Warning */}
-            <ChainWarning
-              currentChainId={chainId}
-              onSwitchChain={switchToArbitrum}
-            />
+            {/* Network Warning for selected token */}
+            <NetworkWarning />
             {/* Widget Toggle Buttons */}
             <div className="flex justify-center gap-6 mb-8 flex-wrap">
               <button
@@ -126,12 +129,13 @@ export const AppContent: React.FC = () => {
             {activeWidget === 'send' && (
               <NBGNTransfer initialRecipient={prefilledRecipient} />
             )}
-            {activeWidget === 'exchange' && <NBGNExchange />}
-            {activeWidget === 'redeem' && <NBGNRedeem />}
+            {activeWidget === 'exchange' && <TokenExchange />}
+            {activeWidget === 'redeem' && <TokenRedeem />}
             {activeWidget === 'history' && (
               <TransactionHistory onNavigateToSend={handleNavigateToSend} />
             )}
           </div>
+          </>
         )}
       </header>
 

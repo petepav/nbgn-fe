@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNBGN } from '../../../hooks/useNBGN';
+import { useToken } from '../../../hooks/useToken';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -13,7 +13,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
   initialRecipient = '',
 }) => {
   const { t } = useTranslation();
-  const { formattedBalance, rawBalance, transfer } = useNBGN();
+  const { formattedBalance, rawBalance, transfer } = useToken();
   const { executeTransaction, status, hash, error } = useTransaction();
 
   const [recipient, setRecipient] = useState(initialRecipient);
