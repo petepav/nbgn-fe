@@ -222,7 +222,7 @@ export const TokenExchange: React.FC = () => {
         {/* Stable Token Balance */}
         <div className="balance-display">
           <span className="balance-label">
-            {tokenConfig.stableTokenSymbol} {t('web3:balance', 'Balance')}:
+            {tokenConfig.stableTokenSymbol} {t('web3:balance', 'Balance')}:{' '}
           </span>
           <span className="balance-value">
             {loading ? '...' : formatStableToken(stableBalance)}{' '}
