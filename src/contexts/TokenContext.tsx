@@ -1,4 +1,4 @@
-/* eslint-disable security/detect-object-injection, @typescript-eslint/no-floating-promises, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-floating-promises, @typescript-eslint/no-explicit-any */
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { ethers, Contract } from 'ethers';
 import { SUPPORTED_TOKENS, DEFAULT_TOKEN, TokenConfig } from '../config/tokens';

@@ -3,7 +3,6 @@ import { useTokenContext } from '../../contexts/TokenContext';
 import styles from './TokenSelector.module.css';
 
 const TokenSelector: React.FC = () => {
-  /* eslint-disable security/detect-object-injection */
   const { 
     selectedToken, 
     selectToken, 

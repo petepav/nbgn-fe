@@ -16,7 +16,6 @@ export interface TokenConfig {
   transferFeeRate?: number; // in basis points (20 = 0.02%)
 }
 
-/* eslint-disable security/detect-object-injection */
 export const SUPPORTED_TOKENS: Record<string, TokenConfig> = {
   NBGN: {
     address: '0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067',
