@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { useTranslation } from 'react-i18next';
 import { useAppState, useAppDispatch } from '../contexts/AppContext';
 import { useTokenContext } from '../contexts/TokenContext';
 
@@ -10,8 +9,17 @@ interface TokenOperations {
   formattedBalance: string;
   loading: boolean;
   error: string | null;
-  transfer: (to: string, amount: string) => Promise<ethers.ContractTransactionResponse>;
-  approve: (spender: string, amount: string) => Promise<ethers.ContractTransactionResponse>;
+  // eslint-disable-next-line no-unused-vars
+  transfer: (
+    to: string,
+    amount: string
+  ) => Promise<ethers.ContractTransactionResponse>;
+  // eslint-disable-next-line no-unused-vars
+  approve: (
+    spender: string,
+    amount: string
+  ) => Promise<ethers.ContractTransactionResponse>;
+  // eslint-disable-next-line no-unused-vars
   getAllowance: (owner: string, spender: string) => Promise<string>;
   refresh: () => Promise<void>;
   getContract: () => Promise<ethers.Contract | null>;
@@ -20,13 +28,13 @@ interface TokenOperations {
 export const useToken = (tokenSymbol?: string): TokenOperations => {
   const { web3, user } = useAppState();
   const dispatch = useAppDispatch();
-  const { 
-    selectedToken, 
-    getTokenContract, 
+  const {
+    selectedToken,
+    getTokenContract,
     getTokenBalance,
     parseTokenAmount,
     formatTokenAmount,
-    refreshBalances 
+    refreshBalances,
   } = useTokenContext();
 
   const symbol = tokenSymbol || selectedToken;
@@ -35,67 +43,94 @@ export const useToken = (tokenSymbol?: string): TokenOperations => {
 
   const tokenBalance = getTokenBalance(symbol);
 
-  const transfer = useCallback(async (to: string, amount: string) => {
-    if (!web3.provider || !user.address) {
-      throw new Error('Wallet not connected');
+  // Refresh balance when user address changes
+  useEffect(() => {
+    if (user.address) {
+      console.log(
+        '🔄 useToken: Address changed, refreshing balance for',
+        symbol
+      );
+      void refreshBalances();
     }
+  }, [user.address, symbol, refreshBalances]);
 
-    const contract = await getTokenContract(symbol);
-    if (!contract) {
-      throw new Error(`${symbol} contract not available`);
-    }
+  const transfer = useCallback(
+    async (to: string, amount: string) => {
+      if (!web3.provider || !user.address) {
+        throw new Error('Wallet not connected');
+      }
 
-    const amountWei = parseTokenAmount(amount, symbol);
-    
-    // Check balance
-    const currentBalance = await contract.balanceOf(user.address);
-    if (currentBalance < amountWei) {
-      throw new Error(`Insufficient ${symbol} balance`);
-    }
+      const contract = await getTokenContract(symbol);
+      if (!contract) {
+        throw new Error(`${symbol} contract not available`);
+      }
 
-    // Execute transfer
-    const transaction = await contract.transfer(to, amountWei);
-    
-    // Refresh balance after transaction
-    await transaction.wait();
-    await refreshBalances();
-    
-    return transaction;
-  }, [web3.provider, user.address, symbol, getTokenContract, parseTokenAmount, refreshBalances]);
+      const amountWei = parseTokenAmount(amount, symbol);
 
-  const approve = useCallback(async (spender: string, amount: string) => {
-    if (!web3.provider || !user.address) {
-      throw new Error('Wallet not connected');
-    }
+      // Check balance
+      const currentBalance = await contract.balanceOf(user.address);
+      if (currentBalance < amountWei) {
+        throw new Error(`Insufficient ${symbol} balance`);
+      }
 
-    const contract = await getTokenContract(symbol);
-    if (!contract) {
-      throw new Error(`${symbol} contract not available`);
-    }
+      // Execute transfer
+      const transaction = await contract.transfer(to, amountWei);
 
-    const amountWei = parseTokenAmount(amount, symbol);
-    const transaction = await contract.approve(spender, amountWei);
-    
-    return transaction;
-  }, [web3.provider, user.address, symbol, getTokenContract, parseTokenAmount]);
+      // Refresh balance after transaction
+      await transaction.wait();
+      await refreshBalances();
 
-  const getAllowance = useCallback(async (owner: string, spender: string) => {
-    const contract = await getTokenContract(symbol);
-    if (!contract) {
-      return '0';
-    }
+      return transaction;
+    },
+    [
+      web3.provider,
+      user.address,
+      symbol,
+      getTokenContract,
+      parseTokenAmount,
+      refreshBalances,
+    ]
+  );
 
-    const allowance = await contract.allowance(owner, spender);
-    return formatTokenAmount(allowance, symbol);
-  }, [symbol, getTokenContract, formatTokenAmount]);
+  const approve = useCallback(
+    async (spender: string, amount: string) => {
+      if (!web3.provider || !user.address) {
+        throw new Error('Wallet not connected');
+      }
+
+      const contract = await getTokenContract(symbol);
+      if (!contract) {
+        throw new Error(`${symbol} contract not available`);
+      }
+
+      const amountWei = parseTokenAmount(amount, symbol);
+      const transaction = await contract.approve(spender, amountWei);
+
+      return transaction;
+    },
+    [web3.provider, user.address, symbol, getTokenContract, parseTokenAmount]
+  );
+
+  const getAllowance = useCallback(
+    async (owner: string, spender: string) => {
+      const contract = await getTokenContract(symbol);
+      if (!contract) {
+        return '0';
+      }
+
+      const allowance = await contract.allowance(owner, spender);
+      return formatTokenAmount(allowance, symbol);
+    },
+    [symbol, getTokenContract, formatTokenAmount]
+  );
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       await refreshBalances();
-    } catch (err: any) {
-      setError(err.message || 'Failed to refresh balance');
+    } catch (err) {
+      setError((err as Error).message || 'Failed to refresh balance');
     } finally {
       setLoading(false);
     }
@@ -108,8 +143,8 @@ export const useToken = (tokenSymbol?: string): TokenOperations => {
         type: 'SET_USER',
         payload: {
           address: user.address,
-          balance: tokenBalance.formattedBalance
-        }
+          balance: tokenBalance.formattedBalance,
+        },
       });
     }
   }, [symbol, user.address, tokenBalance.formattedBalance, dispatch]);
@@ -124,6 +159,6 @@ export const useToken = (tokenSymbol?: string): TokenOperations => {
     approve,
     getAllowance,
     refresh,
-    getContract: () => getTokenContract(symbol)
+    getContract: () => getTokenContract(symbol),
   };
 };

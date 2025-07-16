@@ -76,7 +76,7 @@ export const AppContent: React.FC = () => {
               >
                 {t('common:connectFirst', 'Connect your wallet to get started')}
               </h2>
-              <WalletConnect />
+              <WalletConnect key={user.address || 'no-wallet'} />
             </div>
           </>
         ) : (
@@ -93,7 +93,7 @@ export const AppContent: React.FC = () => {
 
             <MoneriumExplainer isVisible={selectedToken === 'NBGN'} />
 
-            <WalletConnect />
+            <WalletConnect key={user.address || 'wallet-connected'} />
           </>
         )}
 

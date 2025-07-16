@@ -339,10 +339,25 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   // Refresh balances when wallet connects or address changes
   useEffect(() => {
     let interval: number | undefined;
+    let timeoutId: number | undefined;
+
+    console.log('🔄 TokenContext: Address/Connection change detected', {
+      address: user.address,
+      connected: web3.connected,
+      chainId: currentChainId,
+    });
 
     if (user.address && web3.connected) {
       // Immediately refresh balances when address changes
-      void refreshBalances();
+      console.log(
+        '🔄 TokenContext: Refreshing balances for new address:',
+        user.address
+      );
+
+      // Add a small delay to ensure provider is ready with new account
+      timeoutId = window.setTimeout(() => {
+        void refreshBalances();
+      }, 100);
 
       // Set up polling for balance updates
       interval = window.setInterval(() => {
@@ -350,10 +365,14 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
       }, 15000); // Every 15 seconds
     } else {
       // Clear balances when disconnected
+      console.log('🔄 TokenContext: Clearing balances - disconnected');
       setTokenBalances({});
     }
 
     return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
       if (interval) {
         window.clearInterval(interval);
       }
