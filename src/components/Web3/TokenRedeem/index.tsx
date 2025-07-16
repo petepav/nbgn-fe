@@ -113,7 +113,8 @@ export const TokenRedeem: React.FC = () => {
         {/* Token Balance */}
         <div className="balance-display">
           <span className="balance-label">
-            {t('web3:balanceWithToken.token', { token: tokenConfig.symbol })}:
+            {t('web3:balanceWithToken.token', { token: tokenConfig.symbol })}
+            :{' '}
           </span>
           <span className="balance-value">
             {formattedBalance} {tokenConfig.symbol}

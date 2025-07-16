@@ -338,7 +338,7 @@ export const TokenExchange: React.FC = () => {
         {/* Action Buttons */}
         {needsApproval() ? (
           <button
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full mt-4"
             onClick={handleApprove}
             disabled={
               !stableAmount || parseFloat(stableAmount) <= 0 || isApproving
@@ -360,7 +360,7 @@ export const TokenExchange: React.FC = () => {
           </button>
         ) : (
           <button
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full mt-4"
             onClick={handleMint}
             disabled={
               !stableAmount ||
