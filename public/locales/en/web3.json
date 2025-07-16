@@ -12,7 +12,7 @@
     "failed": "Transaction failed",
     "gasEstimate": "Estimated gas: {{amount}} ETH",
     "history": "Transaction History",
-    "send": "Send NBGN",
+    "send": "Send {{token}}",
     "historyShort": "History",
     "noHistory": "No transactions yet",
     "sent": "Sent",
@@ -22,19 +22,24 @@
   },
   "recipient": "Recipient Address",
   "amount": "Amount",
+  "balance": "Balance",
+  "balanceWithToken": {
+    "token": "{{token}} Balance"
+  },
   "exchange": {
     "title": "Buy NBGN with EURe",
     "shortTitle": "Buy",
     "eureBalance": "EURe Balance",
     "eureAmount": "EURe Amount",
     "willReceive": "You will receive",
-    "approve": "Approve EURe",
+    "approve": "Approve {{token}}",
     "approving": "Approving...",
-    "mint": "Buy NBGN",
+    "mint": "Buy {{token}}",
     "minting": "Buying NBGN...",
     "insufficientBalance": "Insufficient EURe balance",
     "useMax": "Use max",
-    "approveAndMint": "Approve & Buy NBGN"
+    "approveAndMint": "Approve & Buy NBGN",
+    "rate": "Exchange Rate"
   },
   "redeem": {
     "title": "Sell NBGN for EURe",
@@ -46,6 +51,13 @@
     "burn": "Sell NBGN",
     "burning": "Selling NBGN...",
     "insufficientBalance": "Insufficient NBGN balance",
-    "useMax": "Sell all"
+    "useMax": "Sell all",
+    "amount": "{{token}} Amount to Sell",
+    "warning": "This will permanently burn your {{token}} tokens",
+    "submit": "Sell {{token}}",
+    "rate": "Exchange Rate"
+  },
+  "trade": {
+    "title": "Trade"
   }
 }

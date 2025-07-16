@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import { TokenProvider } from './contexts/TokenContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { AppContent } from './components/AppContent';
 import { DisclaimerPage } from './components/DisclaimerPage';
 import { InfoPage } from './components/InfoPage';
@@ -46,7 +47,9 @@ function App() {
   return (
     <AppProvider>
       <TokenProvider>
-        <AppWithTerms />
+        <ToastProvider>
+          <AppWithTerms />
+        </ToastProvider>
       </TokenProvider>
     </AppProvider>
   );

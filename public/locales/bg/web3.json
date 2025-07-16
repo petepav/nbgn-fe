@@ -12,7 +12,7 @@
     "failed": "Транзакцията е неуспешна",
     "gasEstimate": "Прогнозен газ: {{amount}} ETH",
     "history": "История на транзакциите",
-    "send": "Изпрати NBGN",
+    "send": "Изпрати {{token}}",
     "historyShort": "История",
     "noHistory": "Все още няма транзакции",
     "sent": "Изпратени",
@@ -22,19 +22,24 @@
   },
   "recipient": "Адрес на получателя",
   "amount": "Сума",
+  "balance": "Баланс",
+  "balanceWithToken": {
+    "token": "{{token}} Баланс"
+  },
   "exchange": {
     "title": "Купи лев (с евро)",
     "shortTitle": "Купи",
     "eurcBalance": "EURe Баланс",
     "eurcAmount": "EURe Сума",
     "willReceive": "Ще получите",
-    "approve": "Одобри EURe",
+    "approve": "Одобри {{token}}",
     "approving": "Одобрява се...",
-    "mint": "Купи NBGN",
+    "mint": "Купи {{token}}",
     "minting": "Купува се NBGN...",
     "approveAndMint": "Одобри & купи NBGN",
     "insufficientBalance": "Недостатъчен EURe баланс",
-    "useMax": "Максимум"
+    "useMax": "Максимум",
+    "rate": "Обменен курс"
   },
   "redeem": {
     "title": "Продай лев (за евро)",
@@ -46,6 +51,13 @@
     "burn": "Продай NBGN",
     "burning": "Продава се NBGN...",
     "insufficientBalance": "Недостатъчен NBGN баланс",
-    "useMax": "Продай всички"
+    "useMax": "Продай всички",
+    "amount": "{{token}} Сума за продажба",
+    "warning": "Това ще изгори перманентно вашите {{token}} токени",
+    "submit": "Продай {{token}}",
+    "rate": "Обменен курс"
+  },
+  "trade": {
+    "title": "Търгувай"
   }
 }

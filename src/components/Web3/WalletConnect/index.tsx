@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWeb3 } from '../../../hooks/useWeb3';
-import { useNBGN } from '../../../hooks/useNBGN';
+import { useToken } from '../../../hooks/useToken';
+import { useTokenContext } from '../../../contexts/TokenContext';
 import { useAppState } from '../../../contexts/AppContext';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -9,7 +10,8 @@ export const WalletConnect: React.FC = () => {
   const { t } = useTranslation();
   const { connectWallet, disconnectWallet, loading, isReconnecting } =
     useWeb3();
-  const { formattedBalance, loading: nbgnLoading, refresh } = useNBGN();
+  const { formattedBalance, loading: tokenLoading, refresh } = useToken();
+  const { selectedToken } = useTokenContext();
   const { user } = useAppState();
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -59,7 +61,7 @@ export const WalletConnect: React.FC = () => {
   return (
     <div className="wallet-connect">
       {user.address ? (
-        nbgnLoading ? (
+        tokenLoading ? (
           <div className="loader-container">
             <div className="red-loader"></div>
           </div>
@@ -114,7 +116,9 @@ export const WalletConnect: React.FC = () => {
                 {copiedAddress ? 'Копирано!' : 'Копирай'}
               </button>
             </div>
-            <p className="balance">{formattedBalance}</p>
+            <p className="balance">
+              {formattedBalance} {selectedToken}
+            </p>
             <div className="flex gap-3 mt-4">
               <button
                 onClick={refresh}

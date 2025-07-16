@@ -12,39 +12,120 @@ export const InfoPage: React.FC = () => {
       </div>
 
       <div className="info-content">
-        <h1>🇧🇬 Информация за NBGN проекта</h1>
+        <h1>🌍 Информация за NBGN, DBGN и GBGN токените</h1>
 
-        {/* Project Information Section */}
+        {/* Overview Section */}
         <section className="info-section">
           <h2>
-            <i className="fas fa-info-circle mr-2"></i>Какво е NBGN?
+            <i className="fas fa-coins mr-2"></i>Преглед на токените
           </h2>
           <div className="info-card">
             <p>
-              NBGN (Новият български лев) е експериментален криптографски токен,
-              който имитира българския лев в децентрализираната екосистема.
-              Проектът е създаден с образователна цел и демонстрира как
-              традиционните валути могат да бъдат представени в блокчейн
-              средата.
+              Семейството от токени включва три различни актива, всеки обвързан
+              с различна стойност:
             </p>
-            <ul>
-              <li>
-                <strong>Фиксиран курс:</strong> 1 EUR = 1.9558 NBGN (като при
-                BGN)
-              </li>
-              <li>
-                <strong>Мрежа:</strong> Arbitrum One за ниски такси и бързи
-                трансакции
-              </li>
-              <li>
-                <strong>Обвързан с EURe:</strong> Стабилен токен, обезпечен с
-                евро
-              </li>
-              <li>
-                <strong>Образователен характер:</strong> Не е официална валута
-                или инвестиция
-              </li>
-            </ul>
+            <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
+              {/* NBGN Card */}
+              <div
+                style={{
+                  padding: '20px',
+                  backgroundColor: '#e3f2fd',
+                  borderRadius: '8px',
+                  border: '2px solid #1E88E5',
+                }}
+              >
+                <h3 style={{ color: '#1E88E5', marginTop: 0 }}>
+                  🇧🇬 NBGN - Новият български лев
+                </h3>
+                <ul style={{ marginBottom: 0 }}>
+                  <li>
+                    <strong>Обвързан с:</strong> EUR (Евро)
+                  </li>
+                  <li>
+                    <strong>Курс:</strong> 1 EUR = 1.95583 NBGN
+                  </li>
+                  <li>
+                    <strong>Мрежа:</strong> Arbitrum One
+                  </li>
+                  <li>
+                    <strong>Стабилна монета:</strong> EURe
+                  </li>
+                  <li>
+                    <strong>Адрес:</strong>{' '}
+                    <code style={{ fontSize: '12px' }}>
+                      0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067
+                    </code>
+                  </li>
+                </ul>
+              </div>
+
+              {/* DBGN Card */}
+              <div
+                style={{
+                  padding: '20px',
+                  backgroundColor: '#e8f5e9',
+                  borderRadius: '8px',
+                  border: '2px solid #43A047',
+                }}
+              >
+                <h3 style={{ color: '#43A047', marginTop: 0 }}>
+                  💵 DBGN - Доларов BGN
+                </h3>
+                <ul style={{ marginBottom: 0 }}>
+                  <li>
+                    <strong>Обвързан с:</strong> USD (Щатски долар)
+                  </li>
+                  <li>
+                    <strong>Курс:</strong> 1 USD = 1.6667 DBGN (0.60 USD per
+                    DBGN)
+                  </li>
+                  <li>
+                    <strong>Мрежа:</strong> Arbitrum One
+                  </li>
+                  <li>
+                    <strong>Стабилна монета:</strong> USDC
+                  </li>
+                  <li>
+                    <strong>Адрес:</strong>{' '}
+                    <code style={{ fontSize: '12px' }}>
+                      0x144bc6785d4bBC450a736f0e0AC6d2B551a1eDB6
+                    </code>
+                  </li>
+                </ul>
+              </div>
+
+              {/* GBGN Card */}
+              <div
+                style={{
+                  padding: '20px',
+                  backgroundColor: '#fffde7',
+                  borderRadius: '8px',
+                  border: '2px solid #FFD700',
+                }}
+              >
+                <h3 style={{ color: '#F57C00', marginTop: 0 }}>
+                  🏆 GBGN - Златен BGN
+                </h3>
+                <ul style={{ marginBottom: 0 }}>
+                  <li>
+                    <strong>Обвързан с:</strong> PAXG (Токенизирано злато)
+                  </li>
+                  <li>
+                    <strong>Курс:</strong> 1 PAXG = 5,600 GBGN
+                  </li>
+                  <li>
+                    <strong>Мрежа:</strong> Ethereum Mainnet
+                  </li>
+                  <li>
+                    <strong>Стабилна монета:</strong> PAXG (1 PAXG = 1 тройунция
+                    злато)
+                  </li>
+                  <li>
+                    <strong>Адрес:</strong> <em>Предстои внедряване</em>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 

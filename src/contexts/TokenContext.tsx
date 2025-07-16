@@ -1,8 +1,15 @@
-/* eslint-disable @typescript-eslint/no-floating-promises, @typescript-eslint/no-explicit-any */
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+/* eslint-disable @typescript-eslint/no-floating-promises, @typescript-eslint/no-explicit-any, no-unused-vars */
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from 'react';
 import { ethers, Contract } from 'ethers';
 import { SUPPORTED_TOKENS, DEFAULT_TOKEN, TokenConfig } from '../config/tokens';
 import { NBGN_ABI } from '../contracts/abis/NBGN';
+import { DBGN_ABI } from '../contracts/abis/DBGN';
 import { useAppState } from './AppContext';
 import { getNetworkParams } from '../utils/networks';
 
@@ -20,8 +27,15 @@ interface TokenContextType {
   supportedTokens: typeof SUPPORTED_TOKENS;
   getTokenConfig: (symbol?: string) => TokenConfig;
   getTokenContract: (symbol?: string) => Promise<Contract | null>;
-  getTokenBalance: (symbol?: string) => { balance: string; rawBalance: string; formattedBalance: string };
-  formatTokenAmount: (amount: string | ethers.BigNumberish, symbol?: string) => string;
+  getTokenBalance: (symbol?: string) => {
+    balance: string;
+    rawBalance: string;
+    formattedBalance: string;
+  };
+  formatTokenAmount: (
+    amount: string | ethers.BigNumberish,
+    symbol?: string
+  ) => string;
   parseTokenAmount: (amount: string, symbol?: string) => bigint;
   tokenBalances: TokenBalance;
   loading: boolean;
@@ -67,101 +81,200 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   }, [web3.provider]);
 
   // Get token configuration
-  const getTokenConfig = useCallback((symbol: string = selectedToken): TokenConfig => {
-    return SUPPORTED_TOKENS[symbol];
-  }, [selectedToken]);
+  const getTokenConfig = useCallback(
+    (symbol: string = selectedToken): TokenConfig => {
+      const token =
+        symbol === 'NBGN'
+          ? SUPPORTED_TOKENS.NBGN
+          : symbol === 'DBGN'
+            ? SUPPORTED_TOKENS.DBGN
+            : symbol === 'GBGN'
+              ? SUPPORTED_TOKENS.GBGN
+              : SUPPORTED_TOKENS.NBGN;
+      return token;
+    },
+    [selectedToken]
+  );
 
   // Get token contract instance
-  const getTokenContract = useCallback(async (symbol: string = selectedToken): Promise<Contract | null> => {
-    if (!web3.provider) return null;
+  const getTokenContract = useCallback(
+    async (symbol: string = selectedToken): Promise<Contract | null> => {
+      if (!web3.provider) return null;
 
-    const config = getTokenConfig(symbol);
-    if (!config) return null;
+      const config = getTokenConfig(symbol);
+      if (!config) return null;
 
-    try {
-      const signer = await web3.provider.getSigner();
-      // For now, both NBGN and DBGN use the same ABI structure
-      return new ethers.Contract(config.address, NBGN_ABI, signer);
-    } catch (error) {
-      console.error(`Failed to create ${symbol} contract:`, error);
-      return null;
-    }
-  }, [web3.provider, getTokenConfig, selectedToken]);
+      try {
+        const signer = await web3.provider.getSigner();
+        // Use appropriate ABI for each token
+        const abi = symbol === 'DBGN' ? DBGN_ABI : NBGN_ABI;
+        return new ethers.Contract(config.address, abi, signer);
+      } catch (error) {
+        console.error(`Failed to create ${symbol} contract:`, error);
+        return null;
+      }
+    },
+    [web3.provider, getTokenConfig, selectedToken]
+  );
 
   // Get token balance
-  const getTokenBalance = useCallback((symbol: string = selectedToken) => {
-    return tokenBalances[symbol] || {
-      balance: '0',
-      rawBalance: '0',
-      formattedBalance: '0.00'
-    };
-  }, [selectedToken, tokenBalances]);
+  const getTokenBalance = useCallback(
+    (symbol: string = selectedToken) => {
+      const balance =
+        symbol === 'NBGN'
+          ? tokenBalances.NBGN
+          : symbol === 'DBGN'
+            ? tokenBalances.DBGN
+            : symbol === 'GBGN'
+              ? tokenBalances.GBGN
+              : null;
+      return (
+        balance || {
+          balance: '0',
+          rawBalance: '0',
+          formattedBalance: '0.00',
+        }
+      );
+    },
+    [selectedToken, tokenBalances]
+  );
 
   // Format token amount
-  const formatTokenAmount = useCallback((amount: string | ethers.BigNumberish, symbol: string = selectedToken): string => {
-    const config = getTokenConfig(symbol);
-    try {
-      return ethers.formatUnits(amount, config.decimals);
-    } catch (error) {
-      console.error('Error formatting token amount:', error);
-      return '0';
-    }
-  }, [selectedToken, getTokenConfig]);
+  const formatTokenAmount = useCallback(
+    (
+      amount: string | ethers.BigNumberish,
+      symbol: string = selectedToken
+    ): string => {
+      const config = getTokenConfig(symbol);
+      try {
+        return ethers.formatUnits(amount, config.decimals);
+      } catch (error) {
+        console.error('Error formatting token amount:', error);
+        return '0';
+      }
+    },
+    [selectedToken, getTokenConfig]
+  );
 
   // Parse token amount
-  const parseTokenAmount = useCallback((amount: string, symbol: string = selectedToken): bigint => {
-    const config = getTokenConfig(symbol);
-    try {
-      return ethers.parseUnits(amount, config.decimals);
-    } catch (error) {
-      console.error('Error parsing token amount:', error);
-      return BigInt(0);
-    }
-  }, [selectedToken, getTokenConfig]);
+  const parseTokenAmount = useCallback(
+    (amount: string, symbol: string = selectedToken): bigint => {
+      const config = getTokenConfig(symbol);
+      try {
+        return ethers.parseUnits(amount, config.decimals);
+      } catch (error) {
+        console.error('Error parsing token amount:', error);
+        return BigInt(0);
+      }
+    },
+    [selectedToken, getTokenConfig]
+  );
 
   // Fetch all token balances
   const refreshBalances = useCallback(async () => {
     if (!user.address || !web3.provider) return;
 
+    console.log('🔄 Refreshing balances for address:', user.address);
     setLoading(true);
     const newBalances: TokenBalance = {};
 
     for (const [symbol, config] of Object.entries(SUPPORTED_TOKENS)) {
       try {
-        const contract = await getTokenContract(symbol);
-        if (!contract) continue;
+        // Only fetch balance if we're on the correct network for this token
+        if (currentChainId === config.chainId) {
+          const contract = await getTokenContract(symbol);
+          if (!contract) continue;
 
-        const balance = await contract.balanceOf(user.address);
-        const rawBalance = formatTokenAmount(balance, symbol);
-        
-        // Format with proper locale
-        const formattedBalance = new Intl.NumberFormat('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }).format(parseFloat(rawBalance));
+          const balance = await contract.balanceOf(user.address);
+          const rawBalance = formatTokenAmount(balance, symbol);
 
-        newBalances[symbol] = {
-          balance: balance.toString(),
-          rawBalance,
-          formattedBalance
-        };
+          // Format with proper locale
+          const formattedBalance = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(parseFloat(rawBalance));
+
+          if (symbol === 'NBGN') {
+            newBalances.NBGN = {
+              balance: balance.toString(),
+              rawBalance,
+              formattedBalance,
+            };
+          } else if (symbol === 'DBGN') {
+            newBalances.DBGN = {
+              balance: balance.toString(),
+              rawBalance,
+              formattedBalance,
+            };
+          } else if (symbol === 'GBGN') {
+            newBalances.GBGN = {
+              balance: balance.toString(),
+              rawBalance,
+              formattedBalance,
+            };
+          }
+        } else {
+          // Token is on different network, show zero balance
+          if (symbol === 'NBGN') {
+            newBalances.NBGN = {
+              balance: '0',
+              rawBalance: '0',
+              formattedBalance: '0.00',
+            };
+          } else if (symbol === 'DBGN') {
+            newBalances.DBGN = {
+              balance: '0',
+              rawBalance: '0',
+              formattedBalance: '0.00',
+            };
+          } else if (symbol === 'GBGN') {
+            newBalances.GBGN = {
+              balance: '0',
+              rawBalance: '0',
+              formattedBalance: '0.00',
+            };
+          }
+        }
       } catch (error) {
         console.error(`Error fetching ${symbol} balance:`, error);
-        newBalances[symbol] = {
-          balance: '0',
-          rawBalance: '0',
-          formattedBalance: '0.00'
-        };
+        if (symbol === 'NBGN') {
+          newBalances.NBGN = {
+            balance: '0',
+            rawBalance: '0',
+            formattedBalance: '0.00',
+          };
+        } else if (symbol === 'DBGN') {
+          newBalances.DBGN = {
+            balance: '0',
+            rawBalance: '0',
+            formattedBalance: '0.00',
+          };
+        } else if (symbol === 'GBGN') {
+          newBalances.GBGN = {
+            balance: '0',
+            rawBalance: '0',
+            formattedBalance: '0.00',
+          };
+        }
       }
     }
 
     setTokenBalances(newBalances);
     setLoading(false);
-  }, [user.address, web3.provider, getTokenContract, formatTokenAmount]);
+    console.log('✅ Balance refresh complete:', newBalances);
+  }, [
+    user.address,
+    web3.provider,
+    getTokenContract,
+    formatTokenAmount,
+    currentChainId,
+  ]);
 
   // Select token
   const selectToken = useCallback((symbol: string) => {
-    if (SUPPORTED_TOKENS[symbol]) {
+    const isValidToken =
+      symbol === 'NBGN' || symbol === 'DBGN' || symbol === 'GBGN';
+    if (isValidToken) {
       setSelectedToken(symbol);
       localStorage.setItem('selectedToken', symbol);
     }
@@ -170,61 +283,82 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
   // Load saved token preference
   useEffect(() => {
     const saved = localStorage.getItem('selectedToken');
-    if (saved && SUPPORTED_TOKENS[saved]) {
+    const isValidToken =
+      saved === 'NBGN' || saved === 'DBGN' || saved === 'GBGN';
+    if (saved && isValidToken) {
       setSelectedToken(saved);
     }
   }, []);
 
   // Check if current network matches token requirement
-  const isCorrectNetwork = useCallback((symbol: string = selectedToken): boolean => {
-    const config = getTokenConfig(symbol);
-    return currentChainId === config.chainId;
-  }, [selectedToken, currentChainId, getTokenConfig]);
+  const isCorrectNetwork = useCallback(
+    (symbol: string = selectedToken): boolean => {
+      const config = getTokenConfig(symbol);
+      return currentChainId === config.chainId;
+    },
+    [selectedToken, currentChainId, getTokenConfig]
+  );
 
   // Switch to the required network for a token
-  const switchToTokenNetwork = useCallback(async (symbol: string = selectedToken) => {
-    if (!web3.provider) return;
-    
-    const config = getTokenConfig(symbol);
-    const targetChainId = `0x${config.chainId.toString(16)}`;
-    
-    try {
-      // @ts-ignore - ethereum provider types
-      await web3.provider.provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: targetChainId }],
-      });
-    } catch (switchError: any) {
-      // This error code indicates that the chain has not been added
-      if (switchError.code === 4902) {
-        try {
-          const networkParams = getNetworkParams(config.chainId);
-          // @ts-ignore - ethereum provider types
-          await web3.provider.provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [networkParams],
-          });
-        } catch (addError) {
-          console.error('Failed to add network:', addError);
-          throw addError;
-        }
-      } else {
-        console.error('Failed to switch network:', switchError);
-        throw switchError;
-      }
-    }
-  }, [web3.provider, selectedToken, getTokenConfig]);
+  const switchToTokenNetwork = useCallback(
+    async (symbol: string = selectedToken) => {
+      if (!web3.provider) return;
 
-  // Refresh balances when wallet connects or changes
+      const config = getTokenConfig(symbol);
+      const targetChainId = `0x${config.chainId.toString(16)}`;
+
+      try {
+        // @ts-ignore - ethereum provider types
+        await web3.provider.provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: targetChainId }],
+        });
+      } catch (switchError: any) {
+        // This error code indicates that the chain has not been added
+        if (switchError.code === 4902) {
+          try {
+            const networkParams = getNetworkParams(config.chainId);
+            // @ts-ignore - ethereum provider types
+            await web3.provider.provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [networkParams],
+            });
+          } catch (addError) {
+            console.error('Failed to add network:', addError);
+            throw addError;
+          }
+        } else {
+          console.error('Failed to switch network:', switchError);
+          throw switchError;
+        }
+      }
+    },
+    [web3.provider, selectedToken, getTokenConfig]
+  );
+
+  // Refresh balances when wallet connects or address changes
   useEffect(() => {
+    let interval: number | undefined;
+
     if (user.address && web3.connected) {
+      // Immediately refresh balances when address changes
       void refreshBalances();
-      
+
       // Set up polling for balance updates
-      const interval = setInterval(refreshBalances, 15000); // Every 15 seconds
-      return () => clearInterval(interval);
+      interval = window.setInterval(() => {
+        void refreshBalances();
+      }, 15000); // Every 15 seconds
+    } else {
+      // Clear balances when disconnected
+      setTokenBalances({});
     }
-  }, [user.address, web3.connected, refreshBalances]);
+
+    return () => {
+      if (interval) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [user.address, web3.connected, currentChainId, refreshBalances]);
 
   const value: TokenContextType = {
     selectedToken,
@@ -239,12 +373,10 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
     loading,
     refreshBalances,
     isCorrectNetwork,
-    switchToTokenNetwork
+    switchToTokenNetwork,
   };
 
   return (
-    <TokenContext.Provider value={value}>
-      {children}
-    </TokenContext.Provider>
+    <TokenContext.Provider value={value}>{children}</TokenContext.Provider>
   );
 };

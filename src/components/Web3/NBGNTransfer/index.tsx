@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToken } from '../../../hooks/useToken';
+import { useTokenContext } from '../../../contexts/TokenContext';
 import { useTransaction } from '../../../hooks/useTransaction';
 import { TransactionStatus } from '../TransactionStatus';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -14,6 +15,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
 }) => {
   const { t } = useTranslation();
   const { formattedBalance, rawBalance, transfer } = useToken();
+  const { selectedToken } = useTokenContext();
   const { executeTransaction, status, hash, error } = useTransaction();
 
   const [recipient, setRecipient] = useState(initialRecipient);
@@ -124,7 +126,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
   return (
     <div className="nbgn-transfer">
       <h3 className="text-xl font-bold mb-4">
-        {t('web3:transaction.send', 'Send NBGN')}
+        {t('web3:transaction.send', { token: selectedToken })}
       </h3>
 
       <div className="balance-info mb-4 p-4 bg-gray-50 rounded-lg">
@@ -192,7 +194,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(-1)}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
-                title="Subtract 1 NBGN"
+                title={`Subtract 1 ${selectedToken}`}
               >
                 -1
               </button>
@@ -200,7 +202,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(-0.5)}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
-                title="Subtract 0.5 NBGN"
+                title={`Subtract 0.5 ${selectedToken}`}
               >
                 -0.5
               </button>
@@ -208,7 +210,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(-0.05)}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
-                title="Subtract 0.05 NBGN"
+                title={`Subtract 0.05 ${selectedToken}`}
               >
                 -0.05
               </button>
@@ -218,7 +220,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(0.05)}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
-                title="Add 0.05 NBGN"
+                title={`Add 0.05 ${selectedToken}`}
               >
                 +0.05
               </button>
@@ -226,7 +228,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(0.5)}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
-                title="Add 0.5 NBGN"
+                title={`Add 0.5 ${selectedToken}`}
               >
                 +0.5
               </button>
@@ -234,7 +236,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                 type="button"
                 onClick={() => adjustAmount(1)}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
-                title="Add 1 NBGN"
+                title={`Add 1 ${selectedToken}`}
               >
                 +1
               </button>
@@ -251,7 +253,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
         >
           {isSubmitting || status === 'pending'
             ? t('web3:transaction.pending')
-            : t('web3:transaction.send', 'Send NBGN')}
+            : t('web3:transaction.send', { token: selectedToken })}
         </button>
       </form>
 

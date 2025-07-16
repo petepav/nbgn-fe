@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import { useAppState } from '../../../contexts/AppContext';
@@ -16,7 +16,7 @@ export const TokenExchange: React.FC = () => {
   const { selectedToken, getTokenConfig } = useTokenContext();
   const { getContract, refresh: refreshToken } = useToken();
   const { executeTransaction, status, hash, error } = useTransaction();
-  
+
   const tokenConfig = getTokenConfig();
   const [stableAmount, setStableAmount] = useState('');
   const [stableBalance, setStableBalance] = useState('0');
@@ -29,7 +29,11 @@ export const TokenExchange: React.FC = () => {
   // Get the appropriate stable token ABI
   const getStableTokenABI = () => {
     if (tokenConfig.stableTokenSymbol === 'EURe') return EURE_ABI;
-    if (tokenConfig.stableTokenSymbol === 'EURC' || tokenConfig.stableTokenSymbol === 'USDC') return EURC_ABI;
+    if (
+      tokenConfig.stableTokenSymbol === 'EURC' ||
+      tokenConfig.stableTokenSymbol === 'USDC'
+    )
+      return EURC_ABI;
     return EURE_ABI; // default
   };
 
@@ -37,46 +41,53 @@ export const TokenExchange: React.FC = () => {
   const formatStableToken = (value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return '0.00';
-    
+
     return numValue.toLocaleString('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
 
   // Get stable token contract
-  const getStableTokenContract = async () => {
+  const getStableTokenContract = useCallback(async () => {
     if (!web3.provider || !tokenConfig.stableTokenAddress) return null;
-    
+
     try {
       const signer = await web3.provider.getSigner();
-      return new ethers.Contract(tokenConfig.stableTokenAddress, getStableTokenABI(), signer);
+      return new ethers.Contract(
+        tokenConfig.stableTokenAddress,
+        getStableTokenABI(),
+        signer
+      );
     } catch (error) {
       console.error('Failed to get stable token contract:', error);
       return null;
     }
-  };
+  }, [web3.provider, tokenConfig.stableTokenAddress, getStableTokenABI]);
 
   // Fetch stable token balance and allowance
   useEffect(() => {
     const fetchStableTokenData = async () => {
       if (!user.address || !web3.provider) return;
-      
+
       try {
         setLoading(true);
         const stableContract = await getStableTokenContract();
         const tokenContract = await getContract();
-        
+
         if (!stableContract || !tokenContract) return;
-        
+
         // Get stable token balance
         const balance = await stableContract.balanceOf(user.address);
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
         const formattedBalance = ethers.formatUnits(balance, decimals);
         setStableBalance(formattedBalance);
-        
+
         // Get current allowance
-        const currentAllowance = await stableContract.allowance(user.address, tokenConfig.address);
+        const currentAllowance = await stableContract.allowance(
+          user.address,
+          tokenConfig.address
+        );
         setAllowance(ethers.formatUnits(currentAllowance, decimals));
       } catch (error) {
         console.error('Failed to fetch stable token data:', error);
@@ -86,7 +97,15 @@ export const TokenExchange: React.FC = () => {
     };
 
     void fetchStableTokenData();
-  }, [user.address, web3.provider, selectedToken, getContract, getStableTokenContract, tokenConfig.address, tokenConfig.stableTokenSymbol]);
+  }, [
+    user.address,
+    web3.provider,
+    selectedToken,
+    getContract,
+    getStableTokenContract,
+    tokenConfig.address,
+    tokenConfig.stableTokenSymbol,
+  ]);
 
   // Calculate expected token amount when stable amount changes
   useEffect(() => {
@@ -106,17 +125,18 @@ export const TokenExchange: React.FC = () => {
 
   const handleApprove = async () => {
     if (!stableAmount) return;
-    
+
     setIsApproving(true);
-    
+
     try {
       await executeTransaction(async () => {
         const stableContract = await getStableTokenContract();
-        if (!stableContract) throw new Error('Failed to get stable token contract');
-        
+        if (!stableContract)
+          throw new Error('Failed to get stable token contract');
+
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
         const amountWei = ethers.parseUnits(stableAmount, decimals);
-        
+
         return await stableContract.approve(tokenConfig.address, amountWei);
       });
 
@@ -124,7 +144,10 @@ export const TokenExchange: React.FC = () => {
       const stableContract = await getStableTokenContract();
       if (stableContract) {
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
-        const newAllowance = await stableContract.allowance(user.address, tokenConfig.address);
+        const newAllowance = await stableContract.allowance(
+          user.address,
+          tokenConfig.address
+        );
         setAllowance(ethers.formatUnits(newAllowance, decimals));
       }
     } finally {
@@ -134,24 +157,24 @@ export const TokenExchange: React.FC = () => {
 
   const handleMint = async () => {
     if (!stableAmount || needsApproval()) return;
-    
+
     setIsMinting(true);
-    
+
     try {
       await executeTransaction(async () => {
         const tokenContract = await getContract();
         if (!tokenContract) throw new Error('Failed to get token contract');
-        
+
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
         const amountWei = ethers.parseUnits(stableAmount, decimals);
-        
+
         return await tokenContract.mint(amountWei);
       });
 
       // Clear form and refresh balances on success
       setStableAmount('');
       await refreshToken();
-      
+
       // Refresh stable token balance
       const stableContract = await getStableTokenContract();
       if (stableContract) {
@@ -168,6 +191,18 @@ export const TokenExchange: React.FC = () => {
     setStableAmount(stableBalance);
   };
 
+  const adjustAmount = (delta: number) => {
+    const currentAmount = parseFloat(stableAmount) || 0;
+    const newAmount = Math.max(0, currentAmount + delta);
+    const maxBalance = parseFloat(stableBalance) || 0;
+
+    if (newAmount <= maxBalance) {
+      setStableAmount(newAmount.toFixed(2));
+    } else {
+      setStableAmount(maxBalance.toFixed(2));
+    }
+  };
+
   const getExchangeTitle = () => {
     if (selectedToken === 'NBGN') {
       return t('web3:exchange.title'); // "Купи лев (с евро)"
@@ -181,9 +216,7 @@ export const TokenExchange: React.FC = () => {
 
   return (
     <div className="nbgn-widget">
-      <h2 className="text-2xl font-bold mb-6">
-        {getExchangeTitle()}
-      </h2>
+      <h2 className="text-2xl font-bold mb-6">{getExchangeTitle()}</h2>
 
       <div className="space-y-6">
         {/* Stable Token Balance */}
@@ -192,7 +225,8 @@ export const TokenExchange: React.FC = () => {
             {tokenConfig.stableTokenSymbol} {t('web3:balance', 'Balance')}:
           </span>
           <span className="balance-value">
-            {loading ? '...' : formatStableToken(stableBalance)} {tokenConfig.stableTokenSymbol}
+            {loading ? '...' : formatStableToken(stableBalance)}{' '}
+            {tokenConfig.stableTokenSymbol}
           </span>
         </div>
 
@@ -206,7 +240,7 @@ export const TokenExchange: React.FC = () => {
               type="number"
               className="form-input"
               value={stableAmount}
-              onChange={(e) => setStableAmount(e.target.value)}
+              onChange={e => setStableAmount(e.target.value)}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -220,21 +254,82 @@ export const TokenExchange: React.FC = () => {
               MAX
             </button>
           </div>
+
+          {/* Amount Adjustment Buttons */}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => adjustAmount(-10)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title={`Subtract 10 ${tokenConfig.stableTokenSymbol}`}
+              >
+                -10
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-5)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title={`Subtract 5 ${tokenConfig.stableTokenSymbol}`}
+              >
+                -5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-1)}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title={`Subtract 1 ${tokenConfig.stableTokenSymbol}`}
+              >
+                -1
+              </button>
+            </div>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => adjustAmount(1)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title={`Add 1 ${tokenConfig.stableTokenSymbol}`}
+              >
+                +1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(5)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title={`Add 5 ${tokenConfig.stableTokenSymbol}`}
+              >
+                +5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(10)}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title={`Add 10 ${tokenConfig.stableTokenSymbol}`}
+              >
+                +10
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Expected Amount */}
         {stableAmount && parseFloat(stableAmount) > 0 && (
           <div className="exchange-info">
             <div className="exchange-rate">
-              {t('web3:exchange.rate')}: 1 {tokenConfig.stableTokenSymbol} = {getExchangeRate(selectedToken)} {tokenConfig.symbol}
+              {t('web3:exchange.rate')}: 1 {tokenConfig.stableTokenSymbol} ={' '}
+              {getExchangeRate(selectedToken)} {tokenConfig.symbol}
             </div>
             <div className="expected-amount">
-              {t('web3:exchange.willReceive')}: <strong>{expectedTokenAmount} {tokenConfig.symbol}</strong>
+              {t('web3:exchange.willReceive')}:{' '}
+              <strong>
+                {expectedTokenAmount} {tokenConfig.symbol}
+              </strong>
             </div>
             {tokenConfig.hasTransferFee && (
               <div className="fee-notice">
                 <i className="fas fa-info-circle mr-2"></i>
-                {tokenConfig.stableTokenSymbol} has a {(tokenConfig.transferFeeRate! / 100).toFixed(2)}% transfer fee
+                {tokenConfig.stableTokenSymbol} has a{' '}
+                {(tokenConfig.transferFeeRate! / 100).toFixed(2)}% transfer fee
               </div>
             )}
           </div>
@@ -245,7 +340,9 @@ export const TokenExchange: React.FC = () => {
           <button
             className="btn btn-primary w-full"
             onClick={handleApprove}
-            disabled={!stableAmount || parseFloat(stableAmount) <= 0 || isApproving}
+            disabled={
+              !stableAmount || parseFloat(stableAmount) <= 0 || isApproving
+            }
           >
             {isApproving ? (
               <span className="flex items-center justify-center">
@@ -255,7 +352,9 @@ export const TokenExchange: React.FC = () => {
             ) : (
               <span>
                 <i className="fas fa-check mr-2"></i>
-                {t('web3:exchange.approve', { token: tokenConfig.stableTokenSymbol })}
+                {t('web3:exchange.approve', {
+                  token: tokenConfig.stableTokenSymbol,
+                })}
               </span>
             )}
           </button>
@@ -264,8 +363,8 @@ export const TokenExchange: React.FC = () => {
             className="btn btn-primary w-full"
             onClick={handleMint}
             disabled={
-              !stableAmount || 
-              parseFloat(stableAmount) <= 0 || 
+              !stableAmount ||
+              parseFloat(stableAmount) <= 0 ||
               parseFloat(stableAmount) > parseFloat(stableBalance) ||
               isMinting
             }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNBGN } from '../../../hooks/useNBGN';
+import { useToken } from '../../../hooks/useToken';
+import { useTokenContext } from '../../../contexts/TokenContext';
 import { useAppState } from '../../../contexts/AppContext';
 import { ethers } from 'ethers';
-import { useNBGNFormatter } from '../../../utils/formatters';
 import { EURE_ABI } from '../../../contracts/abis/EURe';
-import environment from '../../../config/environment';
+import { EURC_ABI } from '../../../contracts/abis/EURC';
 
 interface Transaction {
   hash: string;
@@ -22,15 +22,18 @@ interface Transaction {
 }
 
 interface TransactionHistoryProps {
-  onNavigateToSend?: (address: string) => void;
+  onNavigateToSend?: () => void;
 }
 
-export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNavigateToSend }) => {
+export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
+  onNavigateToSend,
+}) => {
   const { t } = useTranslation();
   const { user } = useAppState();
   const { web3 } = useAppState();
-  const { getContract } = useNBGN();
-  const formatNBGN = useNBGNFormatter();
+  const { getContract } = useToken();
+  const { selectedToken, getTokenConfig } = useTokenContext();
+  const tokenConfig = getTokenConfig();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -67,197 +70,223 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
     }
   };
 
-  // Helper function to get EURe contract
-  const getEUReContract = useCallback(async () => {
-    if (!web3.provider || !environment.eureAddress) return null;
+  // Helper function to get stable token contract
+  const getStableTokenContract = useCallback(async () => {
+    if (!web3.provider || !tokenConfig.stableTokenAddress) return null;
     try {
       const signer = await web3.provider.getSigner();
-      return new ethers.Contract(environment.eureAddress, EURE_ABI, signer);
+      const abi =
+        tokenConfig.stableTokenSymbol === 'EURe' ? EURE_ABI : EURC_ABI;
+      return new ethers.Contract(tokenConfig.stableTokenAddress, abi, signer);
     } catch {
       return null;
     }
-  }, [web3.provider]);
+  }, [web3.provider, tokenConfig]);
 
   // Function to enrich transactions with EURe amounts and transaction fees
-  const enrichTransactionsWithDetails = useCallback(async (transactions: Transaction[]) => {
-    if (!web3.provider) return;
+  const enrichTransactionsWithDetails = useCallback(
+    async (transactions: Transaction[]) => {
+      if (!web3.provider) return;
 
-    for (const tx of transactions) {
-      try {
-        // Get transaction receipt for fee information
-        const receipt = await web3.provider.getTransactionReceipt(tx.hash);
-        if (receipt) {
-          const gasUsed = receipt.gasUsed.toString();
-          const fullTx = await web3.provider.getTransaction(tx.hash);
-          if (fullTx) {
-            const gasPrice = fullTx.gasPrice?.toString() || '0';
-            const fee = (BigInt(gasUsed) * BigInt(gasPrice)).toString();
-            
-            tx.gasUsed = gasUsed;
-            tx.gasPrice = gasPrice;
-            tx.transactionFee = ethers.formatEther(fee);
+      for (const tx of transactions) {
+        try {
+          // Get transaction receipt for fee information
+          const receipt = await web3.provider.getTransactionReceipt(tx.hash);
+          if (receipt) {
+            const gasUsed = receipt.gasUsed.toString();
+            const fullTx = await web3.provider.getTransaction(tx.hash);
+            if (fullTx) {
+              const gasPrice = fullTx.gasPrice?.toString() || '0';
+              const fee = (BigInt(gasUsed) * BigInt(gasPrice)).toString();
+
+              tx.gasUsed = gasUsed;
+              tx.gasPrice = gasPrice;
+              tx.transactionFee = ethers.formatEther(fee);
+            }
           }
-        }
 
-        // For minted/sold transactions, try to find corresponding EURe transfer
-        if (tx.type === 'minted' || tx.type === 'sold') {
-          try {
-            const eureContract = await getEUReContract();
-            if (eureContract && receipt) {
-              // Look for EURe Transfer events in the same transaction
-              const eureTransferFilter = eureContract.filters.Transfer();
-              const eureEvents = await eureContract.queryFilter(
-                eureTransferFilter,
-                receipt.blockNumber,
-                receipt.blockNumber
-              );
-              
-              // Find EURe transfer in the same transaction
-              const eureTransfer = eureEvents.find(event => 
-                event.transactionHash === tx.hash
-              );
-              
-              if (eureTransfer && 'args' in eureTransfer && Array.isArray(eureTransfer.args)) {
-                const eureArgs = eureTransfer.args as string[];
-                const eureAmount = ethers.formatUnits(eureArgs[2], 18);
-                
-                // For minted transactions, user pays EURe (from user to contract)
-                // For sold transactions, user receives EURe (from contract to user)
-                if (tx.type === 'minted' || tx.type === 'sold') {
-                  tx.eureAmount = eureAmount;
+          // For minted/sold transactions, try to find corresponding EURe transfer
+          if (tx.type === 'minted' || tx.type === 'sold') {
+            try {
+              const stableContract = await getStableTokenContract();
+              if (stableContract && receipt) {
+                // Look for stable token Transfer events in the same transaction
+                const transferFilter = stableContract.filters.Transfer();
+                const events = await stableContract.queryFilter(
+                  transferFilter,
+                  receipt.blockNumber,
+                  receipt.blockNumber
+                );
+
+                // Find stable token transfer in the same transaction
+                const stableTransfer = events.find(
+                  event => event.transactionHash === tx.hash
+                );
+
+                if (
+                  stableTransfer &&
+                  'args' in stableTransfer &&
+                  Array.isArray(stableTransfer.args)
+                ) {
+                  const stableArgs = stableTransfer.args as string[];
+                  const decimals =
+                    tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
+                  const stableAmount = ethers.formatUnits(
+                    stableArgs[2],
+                    decimals
+                  );
+
+                  // For minted transactions, user pays stable token (from user to contract)
+                  // For sold transactions, user receives stable token (from contract to user)
+                  if (tx.type === 'minted' || tx.type === 'sold') {
+                    tx.eureAmount = stableAmount;
+                  }
                 }
               }
+            } catch {
+              // Silent error handling for EURe amount fetching
             }
-          } catch {
-            // Silent error handling for EURe amount fetching
           }
-        }
-      } catch {
-        // Silent error handling for transaction enrichment
-      }
-    }
-  }, [web3.provider, getEUReContract]);
-
-  const fetchTransactions = useCallback(async (page = 0, append = false) => {
-    if (!user.address || !web3.provider) return;
-
-    let contract;
-    try {
-      if (page === 0) {
-        setLoading(true);
-        setTransactions([]);
-        setCurrentPage(0);
-        setTotalFound(0);
-      } else {
-        setLoadingMore(true);
-      }
-
-      contract = await getContract();
-      if (!contract) return;
-
-      // Get the current block number
-      const currentBlock = await web3.provider.getBlockNumber();
-
-      // For comprehensive history, we'll fetch in chunks from deployment block
-      // Start from a reasonable deployment block (you can adjust this)
-      const deploymentBlock = 150000000; // Approximate NBGN deployment block on Arbitrum
-      const fromBlock = Math.max(deploymentBlock, currentBlock - 1000000); // Look back up to 1M blocks
-
-      // Create filters for sent and received transactions
-      const sentFilter = contract.filters.Transfer(user.address, null);
-      const receivedFilter = contract.filters.Transfer(null, user.address);
-
-      // Fetch events in batches to avoid RPC limits
-      const batchSize = 100000; // 100k blocks per batch
-      const allEvents = [];
-
-      for (
-        let startBlock = fromBlock;
-        startBlock <= currentBlock;
-        startBlock += batchSize
-      ) {
-        const endBlock = Math.min(startBlock + batchSize - 1, currentBlock);
-
-        try {
-          const [sentBatch, receivedBatch] = await Promise.all([
-            contract.queryFilter(sentFilter, startBlock, endBlock),
-            contract.queryFilter(receivedFilter, startBlock, endBlock),
-          ]);
-
-          allEvents.push(...sentBatch, ...receivedBatch);
         } catch {
-          // If batch fails, try smaller chunks
-          continue;
+          // Silent error handling for transaction enrichment
         }
       }
+    },
+    [web3.provider, getStableTokenContract, tokenConfig]
+  );
 
-      // Process events into transactions
-      const processedTxs: Transaction[] = [];
-      const seenHashes = new Set<string>();
+  const fetchTransactions = useCallback(
+    async (page = 0, append = false) => {
+      if (!user.address || !web3.provider) return;
 
-      for (const event of allEvents) {
-        if (
-          'args' in event &&
-          !seenHashes.has(event.transactionHash) &&
-          Array.isArray(event.args)
+      let contract;
+      try {
+        if (page === 0) {
+          setLoading(true);
+          setTransactions([]);
+          setCurrentPage(0);
+          setTotalFound(0);
+        } else {
+          setLoadingMore(true);
+        }
+
+        contract = await getContract();
+        if (!contract) return;
+
+        // Get the current block number
+        const currentBlock = await web3.provider.getBlockNumber();
+
+        // For comprehensive history, we'll fetch in chunks from deployment block
+        // Start from a reasonable deployment block (you can adjust this)
+        const deploymentBlock = 150000000; // Approximate NBGN deployment block on Arbitrum
+        const fromBlock = Math.max(deploymentBlock, currentBlock - 1000000); // Look back up to 1M blocks
+
+        // Create filters for sent and received transactions
+        const sentFilter = contract.filters.Transfer(user.address, null);
+        const receivedFilter = contract.filters.Transfer(null, user.address);
+
+        // Fetch events in batches to avoid RPC limits
+        const batchSize = 100000; // 100k blocks per batch
+        const allEvents = [];
+
+        for (
+          let startBlock = fromBlock;
+          startBlock <= currentBlock;
+          startBlock += batchSize
         ) {
-          seenHashes.add(event.transactionHash);
-          const args = event.args as string[];
-          processedTxs.push({
-            hash: event.transactionHash,
-            from: args[0],
-            to: args[1],
-            value: args[2].toString(),
-            blockNumber: event.blockNumber,
-            timestamp: 0, // We'll fetch timestamps on demand
-            type: getTransactionType(args[0], args[1], user.address) as
-              | 'sent'
-              | 'received'
-              | 'minted',
-          });
-        }
-      }
+          const endBlock = Math.min(startBlock + batchSize - 1, currentBlock);
 
-      // Sort by block number (most recent first)
-      processedTxs.sort((a, b) => b.blockNumber - a.blockNumber);
-
-      setTotalFound(processedTxs.length);
-
-      // Paginate results
-      const startIndex = page * TRANSACTIONS_PER_PAGE;
-      const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
-      const paginatedTxs = processedTxs.slice(startIndex, endIndex);
-
-      // Enrich transactions with EURe amounts and fees
-      await enrichTransactionsWithDetails(paginatedTxs);
-
-      // Fetch timestamps for the current page
-      for (const tx of paginatedTxs) {
-        if (tx.timestamp === 0) {
           try {
-            const block = await web3.provider.getBlock(tx.blockNumber);
-            tx.timestamp = block?.timestamp || 0;
+            const [sentBatch, receivedBatch] = await Promise.all([
+              contract.queryFilter(sentFilter, startBlock, endBlock),
+              contract.queryFilter(receivedFilter, startBlock, endBlock),
+            ]);
+
+            allEvents.push(...sentBatch, ...receivedBatch);
           } catch {
-            tx.timestamp = 0;
+            // If batch fails, try smaller chunks
+            continue;
           }
         }
-      }
 
-      if (append) {
-        setTransactions(prev => [...prev, ...paginatedTxs]);
-      } else {
-        setTransactions(paginatedTxs);
-      }
+        // Process events into transactions
+        const processedTxs: Transaction[] = [];
+        const seenHashes = new Set<string>();
 
-      setCurrentPage(page);
-      setHasMore(endIndex < processedTxs.length);
-    } catch {
-      // Silent error handling
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [user.address, web3.provider, getContract, enrichTransactionsWithDetails]);
+        for (const event of allEvents) {
+          if (
+            'args' in event &&
+            !seenHashes.has(event.transactionHash) &&
+            Array.isArray(event.args)
+          ) {
+            seenHashes.add(event.transactionHash);
+            const args = event.args as string[];
+            processedTxs.push({
+              hash: event.transactionHash,
+              from: args[0],
+              to: args[1],
+              value: args[2].toString(),
+              blockNumber: event.blockNumber,
+              timestamp: 0, // We'll fetch timestamps on demand
+              type: getTransactionType(args[0], args[1], user.address) as
+                | 'sent'
+                | 'received'
+                | 'minted',
+            });
+          }
+        }
+
+        // Sort by block number (most recent first)
+        processedTxs.sort((a, b) => b.blockNumber - a.blockNumber);
+
+        setTotalFound(processedTxs.length);
+
+        // If no transactions found, set empty state and return
+        if (processedTxs.length === 0) {
+          setTransactions([]);
+          setHasMore(false);
+          setLoading(false);
+          setLoadingMore(false);
+          return;
+        }
+
+        // Paginate results
+        const startIndex = page * TRANSACTIONS_PER_PAGE;
+        const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
+        const paginatedTxs = processedTxs.slice(startIndex, endIndex);
+
+        // Enrich transactions with EURe amounts and fees
+        await enrichTransactionsWithDetails(paginatedTxs);
+
+        // Fetch timestamps for the current page
+        for (const tx of paginatedTxs) {
+          if (tx.timestamp === 0) {
+            try {
+              const block = await web3.provider.getBlock(tx.blockNumber);
+              tx.timestamp = block?.timestamp || 0;
+            } catch {
+              tx.timestamp = 0;
+            }
+          }
+        }
+
+        if (append) {
+          setTransactions(prev => [...prev, ...paginatedTxs]);
+        } else {
+          setTransactions(paginatedTxs);
+        }
+
+        setCurrentPage(page);
+        setHasMore(endIndex < processedTxs.length);
+      } catch {
+        // Silent error handling
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [user.address, web3.provider, getContract, enrichTransactionsWithDetails]
+  );
 
   const loadMoreTransactions = () => {
     if (!loadingMore && hasMore) {
@@ -267,7 +296,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
 
   useEffect(() => {
     void fetchTransactions(0, false);
-  }, [fetchTransactions]);
+  }, [fetchTransactions, selectedToken]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(38)}`;
@@ -298,28 +327,39 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
   };
 
   const formatValue = (value: string) => {
-    const etherValue = ethers.formatUnits(value, 18);
-    return formatNBGN(etherValue);
+    const tokenValue = ethers.formatUnits(value, tokenConfig.decimals);
+    const numValue = parseFloat(tokenValue);
+
+    if (isNaN(numValue)) return `0.00 ${selectedToken}`;
+
+    return `${numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} ${selectedToken}`;
   };
 
-  const formatEURe = (value: string) => {
+  const formatStableToken = (value: string) => {
     const numValue = parseFloat(value);
-    if (isNaN(numValue)) return '0,00 €';
-    
-    return numValue.toLocaleString('bg-BG', {
+    if (isNaN(numValue)) return `0.00 ${tokenConfig.stableTokenSymbol}`;
+
+    const formatted = numValue.toLocaleString('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }) + ' €';
+      maximumFractionDigits: 2,
+    });
+
+    return `${formatted} ${tokenConfig.stableTokenSymbol}`;
   };
 
   const formatFee = (value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return '0,0000 ETH';
-    
-    return numValue.toLocaleString('en-US', {
-      minimumFractionDigits: 6,
-      maximumFractionDigits: 6
-    }) + ' ETH';
+
+    return (
+      numValue.toLocaleString('en-US', {
+        minimumFractionDigits: 6,
+        maximumFractionDigits: 6,
+      }) + ' ETH'
+    );
   };
 
   if (loading) {
@@ -421,52 +461,76 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ onNaviga
                       <div className="flex items-center gap-1">
                         {onNavigateToSend ? (
                           <button
-                            onClick={() => onNavigateToSend(tx.type === 'sent' ? tx.to : tx.from)}
+                            onClick={() =>
+                              onNavigateToSend(
+                                tx.type === 'sent' ? tx.to : tx.from
+                              )
+                            }
                             className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
                             title="Click to send to this address"
                           >
-                            {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                            {formatAddress(
+                              tx.type === 'sent' ? tx.to : tx.from
+                            )}
                           </button>
                         ) : (
                           <span className="font-medium">
-                            {formatAddress(tx.type === 'sent' ? tx.to : tx.from)}
+                            {formatAddress(
+                              tx.type === 'sent' ? tx.to : tx.from
+                            )}
                           </span>
                         )}
                         <button
-                          onClick={() => copyToClipboard(tx.type === 'sent' ? tx.to : tx.from)}
+                          onClick={() =>
+                            copyToClipboard(
+                              tx.type === 'sent' ? tx.to : tx.from
+                            )
+                          }
                           className={`ml-2 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 border ${
-                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
-                              ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' 
+                            copiedAddress ===
+                            (tx.type === 'sent' ? tx.to : tx.from)
+                              ? 'bg-green-50 border-green-200 text-green-700 shadow-sm'
                               : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 hover:shadow-sm'
                           }`}
                           title={
-                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
-                              ? 'Копирано!' 
+                            copiedAddress ===
+                            (tx.type === 'sent' ? tx.to : tx.from)
+                              ? 'Копирано!'
                               : 'Copy address'
                           }
                         >
-                          <i className={`fas ${
-                            copiedAddress === (tx.type === 'sent' ? tx.to : tx.from)
-                              ? 'fa-check' 
-                              : 'fa-copy'
-                          } mr-1`}></i>
-                          {copiedAddress === (tx.type === 'sent' ? tx.to : tx.from) ? 'Копирано!' : 'Копирай'}
+                          <i
+                            className={`fas ${
+                              copiedAddress ===
+                              (tx.type === 'sent' ? tx.to : tx.from)
+                                ? 'fa-check'
+                                : 'fa-copy'
+                            } mr-1`}
+                          ></i>
+                          {copiedAddress ===
+                          (tx.type === 'sent' ? tx.to : tx.from)
+                            ? 'Копирано!'
+                            : 'Копирай'}
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
-                
-                {/* EURe Amount and Transaction Fee */}
+
+                {/* Stable Token Amount and Transaction Fee */}
                 <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
                   {tx.eureAmount && parseFloat(tx.eureAmount) > 0 && (
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600 flex items-center">
                         <i className="fas fa-euro-sign mr-2 text-blue-600"></i>
-                        {tx.type === 'minted' ? 'EURe Paid:' : tx.type === 'sold' ? 'EURe Received:' : 'EURe Amount:'}
+                        {tx.type === 'minted'
+                          ? `${tokenConfig.stableTokenSymbol} Paid:`
+                          : tx.type === 'sold'
+                            ? `${tokenConfig.stableTokenSymbol} Received:`
+                            : `${tokenConfig.stableTokenSymbol} Amount:`}
                       </span>
                       <span className="font-semibold text-blue-700">
-                        {formatEURe(tx.eureAmount)}
+                        {formatStableToken(tx.eureAmount)}
                       </span>
                     </div>
                   )}

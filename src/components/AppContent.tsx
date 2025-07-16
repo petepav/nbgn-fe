@@ -3,23 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { WalletConnect } from './Web3/WalletConnect';
 import { NBGNTransfer } from './Web3/NBGNTransfer';
-import { TokenExchange } from './Web3/TokenExchange';
-import { TokenRedeem } from './Web3/TokenRedeem';
+import { TokenTrade } from './Web3/TokenTrade';
 import { TransactionHistory } from './Web3/TransactionHistory';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
 import { MobileWarning } from './MobileWarning';
 import TokenSelector from './TokenSelector';
 import { NetworkWarning } from './NetworkWarning';
+import MoneriumExplainer from './MoneriumExplainer';
+import TokenInfoExplainer from './TokenInfoExplainer';
 import { useAppState } from '../contexts/AppContext';
-import { useWeb3 } from '../hooks/useWeb3';
+import { useTokenContext } from '../contexts/TokenContext';
 
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAppState();
+  const { selectedToken } = useTokenContext();
   // const { chainId, switchToArbitrum } = useWeb3();
   const [activeWidget, setActiveWidget] = useState<
-    'send' | 'history' | 'exchange' | 'redeem'
+    'send' | 'history' | 'trade'
   >('send');
   const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
 
@@ -28,9 +30,7 @@ export const AppContent: React.FC = () => {
     setActiveWidget('send');
   };
 
-  const handleWidgetChange = (
-    widget: 'send' | 'history' | 'exchange' | 'redeem'
-  ) => {
+  const handleWidgetChange = (widget: 'send' | 'history' | 'trade') => {
     if (widget !== 'send') {
       setPrefilledRecipient('');
     }
@@ -63,78 +63,93 @@ export const AppContent: React.FC = () => {
 
         <MobileWarning />
 
-        <div className="token-selector-container" style={{ marginTop: '20px', marginBottom: '20px' }}>
-          <TokenSelector />
-        </div>
+        {!user.address ? (
+          // Show wallet connect first if not connected
+          <>
+            <div style={{ marginTop: '40px', marginBottom: '20px' }}>
+              <h2
+                style={{
+                  fontSize: '24px',
+                  marginBottom: '20px',
+                  color: '#333',
+                }}
+              >
+                {t('common:connectFirst', 'Connect your wallet to get started')}
+              </h2>
+              <WalletConnect />
+            </div>
+          </>
+        ) : (
+          // Show token selector and other components after wallet is connected
+          <>
+            <div
+              className="token-selector-container"
+              style={{ marginTop: '20px', marginBottom: '20px' }}
+            >
+              <TokenSelector />
+            </div>
 
-        <WalletConnect />
+            <TokenInfoExplainer />
+
+            <MoneriumExplainer isVisible={selectedToken === 'NBGN'} />
+
+            <WalletConnect />
+          </>
+        )}
 
         {user.address && (
           <>
-          <div className="mt-8 w-full max-w-2xl">
-            {/* Network Warning for selected token */}
-            <NetworkWarning />
-            {/* Widget Toggle Buttons */}
-            <div className="flex justify-center gap-6 mb-8 flex-wrap">
-              <button
-                onClick={() => handleWidgetChange('send')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                  activeWidget === 'send'
-                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl scale-105 border-2 border-green-700'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400 hover:text-green-600 hover:shadow-lg'
-                }`}
-              >
-                <i className="fas fa-paper-plane mr-2"></i>
-                {t('web3:transaction.send', 'Send')}
-              </button>
+            <div className="mt-8 w-full max-w-2xl">
+              {/* Network Warning for selected token */}
+              <NetworkWarning />
+              {/* Widget Toggle Buttons */}
+              <div className="flex justify-center gap-6 mb-8 flex-wrap">
+                <button
+                  onClick={() => handleWidgetChange('send')}
+                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
+                    activeWidget === 'send'
+                      ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl scale-105 border-2 border-green-700'
+                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400 hover:text-green-600 hover:shadow-lg'
+                  }`}
+                >
+                  <i className="fas fa-paper-plane mr-2"></i>
+                  {t('web3:transaction.send', { token: selectedToken })}
+                </button>
 
-              <button
-                onClick={() => handleWidgetChange('exchange')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                  activeWidget === 'exchange'
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-xl scale-105 border-2 border-blue-700'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 hover:shadow-lg'
-                }`}
-              >
-                <i className="fas fa-coins mr-2"></i>
-                {t('web3:exchange.shortTitle', 'Buy')}
-              </button>
+                <button
+                  onClick={() => handleWidgetChange('trade')}
+                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
+                    activeWidget === 'trade'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-xl scale-105 border-2 border-purple-700'
+                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
+                  }`}
+                >
+                  <i className="fas fa-exchange-alt mr-2"></i>
+                  {t('web3:trade.title', 'Trade')}
+                </button>
 
-              <button
-                onClick={() => handleWidgetChange('redeem')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                  activeWidget === 'redeem'
-                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-xl scale-105 border-2 border-red-700'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-red-400 hover:text-red-600 hover:shadow-lg'
-                }`}
-              >
-                <i className="fas fa-fire mr-2"></i>
-                {t('web3:redeem.shortTitle', 'Sell')}
-              </button>
+                <button
+                  onClick={() => handleWidgetChange('history')}
+                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
+                    activeWidget === 'history'
+                      ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-xl scale-105 border-2 border-gray-700'
+                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:text-gray-600 hover:shadow-lg'
+                  }`}
+                >
+                  <i className="fas fa-clock-rotate-left mr-2"></i>
+                  {t('web3:transaction.historyShort', 'History')}
+                </button>
+              </div>
 
-              <button
-                onClick={() => handleWidgetChange('history')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                  activeWidget === 'history'
-                    ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-xl scale-105 border-2 border-gray-700'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:text-gray-600 hover:shadow-lg'
-                }`}
-              >
-                <i className="fas fa-clock-rotate-left mr-2"></i>
-                {t('web3:transaction.historyShort', 'History')}
-              </button>
+              {/* Widget Content */}
+              {activeWidget === 'send' && (
+                <NBGNTransfer initialRecipient={prefilledRecipient} />
+              )}
+              {activeWidget === 'trade' && <TokenTrade />}
+              {activeWidget === 'history' && (
+                <TransactionHistory onNavigateToSend={handleNavigateToSend} />
+              )}
             </div>
-
-            {/* Widget Content */}
-            {activeWidget === 'send' && (
-              <NBGNTransfer initialRecipient={prefilledRecipient} />
-            )}
-            {activeWidget === 'exchange' && <TokenExchange />}
-            {activeWidget === 'redeem' && <TokenRedeem />}
-            {activeWidget === 'history' && (
-              <TransactionHistory onNavigateToSend={handleNavigateToSend} />
-            )}
-          </div>
           </>
         )}
       </header>
@@ -177,7 +192,7 @@ export const AppContent: React.FC = () => {
               className="footer-link"
             >
               <i className="fab fa-github mr-2"></i>
-              Contract
+              Contracts
             </a>
           </div>
         </div>
