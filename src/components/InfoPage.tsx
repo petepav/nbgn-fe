@@ -35,7 +35,7 @@ export const InfoPage: React.FC = () => {
                 }}
               >
                 <h3 style={{ color: '#1E88E5', marginTop: 0 }}>
-                  🇧🇬 NBGN - Новият български лев
+                  🇧🇬 NBGN - Новият лев
                 </h3>
                 <ul style={{ marginBottom: 0 }}>
                   <li>
@@ -69,7 +69,7 @@ export const InfoPage: React.FC = () => {
                 }}
               >
                 <h3 style={{ color: '#43A047', marginTop: 0 }}>
-                  💵 DBGN - Доларов BGN
+                  💵 DBGN - Доларов лев
                 </h3>
                 <ul style={{ marginBottom: 0 }}>
                   <li>
@@ -104,7 +104,7 @@ export const InfoPage: React.FC = () => {
                 }}
               >
                 <h3 style={{ color: '#F57C00', marginTop: 0 }}>
-                  🏆 GBGN - Златен BGN
+                  🏆 GBGN - Златен лев
                 </h3>
                 <ul style={{ marginBottom: 0 }}>
                   <li>
@@ -175,7 +175,8 @@ export const InfoPage: React.FC = () => {
                 Web3
               </li>
               <li>
-                <strong>Общност:</strong> Създаване на българска крипто общност
+                <strong>Общност:</strong> Укрепване на българската крипто
+                общност
               </li>
             </ul>
           </div>
@@ -229,13 +230,15 @@ export const InfoPage: React.FC = () => {
             </div>
 
             <div className="guide-step">
-              <h4>3️⃣ Смени ETH ➜ EURe (крипто-евро)</h4>
+              <h4>3️⃣ Купи EURe чрез Monerium</h4>
               <p>
-                Отвори <strong>Uniswap/1inch</strong> на Arbitrum.
+                Отиди на <strong>monerium.app</strong> и създай акаунт.
                 <br />
-                Swap колкото ти трябва (примерно 10 EURe).
+                Свържи банковата си сметка и купи EURe директно с евро.
                 <br />
-                <em>EURe e €-стейбълкойн, нужен за купуване на NBGN.</em>
+                <em>
+                  Monerium е лицензиран доставчик на електронни пари в ЕС.
+                </em>
               </p>
             </div>
 

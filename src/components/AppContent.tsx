@@ -14,6 +14,8 @@ import MoneriumExplainer from './MoneriumExplainer';
 import TokenInfoExplainer from './TokenInfoExplainer';
 import { useAppState } from '../contexts/AppContext';
 import { useTokenContext } from '../contexts/TokenContext';
+import { BottomNavigation } from './BottomNavigation';
+import styles from './BottomNavigation/BottomNavigation.module.css';
 
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
@@ -99,46 +101,17 @@ export const AppContent: React.FC = () => {
 
         {user.address && (
           <>
-            <div className="mt-8 w-full max-w-2xl">
+            <div className={`mt-8 w-full max-w-2xl ${styles.contentWrapper}`}>
               {/* Network Warning for selected token */}
               <NetworkWarning />
-              {/* Widget Toggle Buttons */}
-              <div className="flex justify-center gap-6 mb-8 flex-wrap">
-                <button
-                  onClick={() => handleWidgetChange('send')}
-                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                    activeWidget === 'send'
-                      ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl scale-105 border-2 border-green-700'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400 hover:text-green-600 hover:shadow-lg'
-                  }`}
-                >
-                  <i className="fas fa-paper-plane mr-2"></i>
-                  {t('web3:transaction.send', { token: selectedToken })}
-                </button>
 
-                <button
-                  onClick={() => handleWidgetChange('trade')}
-                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                    activeWidget === 'trade'
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-xl scale-105 border-2 border-purple-700'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
-                  }`}
-                >
-                  <i className="fas fa-exchange-alt mr-2"></i>
-                  {t('web3:trade.title', 'Trade')}
-                </button>
-
-                <button
-                  onClick={() => handleWidgetChange('history')}
-                  className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[140px] ${
-                    activeWidget === 'history'
-                      ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-xl scale-105 border-2 border-gray-700'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-gray-400 hover:text-gray-600 hover:shadow-lg'
-                  }`}
-                >
-                  <i className="fas fa-clock-rotate-left mr-2"></i>
-                  {t('web3:transaction.historyShort', 'History')}
-                </button>
+              {/* Desktop Navigation - Only show on larger screens */}
+              <div className="hidden md:block">
+                <BottomNavigation
+                  activeWidget={activeWidget}
+                  onWidgetChange={handleWidgetChange}
+                  selectedToken={selectedToken}
+                />
               </div>
 
               {/* Widget Content */}
@@ -149,6 +122,15 @@ export const AppContent: React.FC = () => {
               {activeWidget === 'history' && (
                 <TransactionHistory onNavigateToSend={handleNavigateToSend} />
               )}
+            </div>
+
+            {/* Mobile Navigation - Fixed at bottom */}
+            <div className="block md:hidden">
+              <BottomNavigation
+                activeWidget={activeWidget}
+                onWidgetChange={handleWidgetChange}
+                selectedToken={selectedToken}
+              />
             </div>
           </>
         )}
