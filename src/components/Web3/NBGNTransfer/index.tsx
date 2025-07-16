@@ -201,11 +201,25 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
           </div>
 
           {/* Amount Adjustment Buttons */}
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-2 justify-center">
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(-1)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(-5);
+                }}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                title={`Subtract 5 ${selectedToken}`}
+              >
+                -5
+              </button>
+              <button
+                type="button"
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(-1);
+                }}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
                 title={`Subtract 1 ${selectedToken}`}
               >
@@ -213,7 +227,10 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.5)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.5);
+                }}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
                 title={`Subtract 0.5 ${selectedToken}`}
               >
@@ -221,7 +238,10 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.05)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.05);
+                }}
                 className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
                 title={`Subtract 0.05 ${selectedToken}`}
               >
@@ -231,7 +251,10 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(0.05)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(0.05);
+                }}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
                 title={`Add 0.05 ${selectedToken}`}
               >
@@ -239,7 +262,10 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(0.5)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(0.5);
+                }}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
                 title={`Add 0.5 ${selectedToken}`}
               >
@@ -247,11 +273,25 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(1)}
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(1);
+                }}
                 className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
                 title={`Add 1 ${selectedToken}`}
               >
                 +1
+              </button>
+              <button
+                type="button"
+                onClick={e => {
+                  e.preventDefault();
+                  adjustAmount(5);
+                }}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                title={`Add 5 ${selectedToken}`}
+              >
+                +5
               </button>
             </div>
           </div>

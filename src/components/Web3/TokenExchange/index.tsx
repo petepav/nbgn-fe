@@ -269,16 +269,9 @@ export const TokenExchange: React.FC = () => {
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(-10)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
-                title={`Subtract 10 ${tokenConfig.stableTokenSymbol}`}
-              >
-                -10
-              </button>
-              <button
-                type="button"
                 onClick={() => adjustAmount(-5)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={`Subtract 5 ${tokenConfig.stableTokenSymbol}`}
               >
                 -5
@@ -286,17 +279,55 @@ export const TokenExchange: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(-1)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={`Subtract 1 ${tokenConfig.stableTokenSymbol}`}
               >
                 -1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-0.5)}
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={`Subtract 0.5 ${tokenConfig.stableTokenSymbol}`}
+              >
+                -0.5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-0.05)}
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={`Subtract 0.05 ${tokenConfig.stableTokenSymbol}`}
+              >
+                -0.05
               </button>
             </div>
             <div className="flex gap-1">
               <button
                 type="button"
+                onClick={() => adjustAmount(0.05)}
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={`Add 0.05 ${tokenConfig.stableTokenSymbol}`}
+              >
+                +0.05
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(0.5)}
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={`Add 0.5 ${tokenConfig.stableTokenSymbol}`}
+              >
+                +0.5
+              </button>
+              <button
+                type="button"
                 onClick={() => adjustAmount(1)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={`Add 1 ${tokenConfig.stableTokenSymbol}`}
               >
                 +1
@@ -304,18 +335,11 @@ export const TokenExchange: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(5)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                disabled={loading || isApproving || isMinting}
+                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={`Add 5 ${tokenConfig.stableTokenSymbol}`}
               >
                 +5
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustAmount(10)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
-                title={`Add 10 ${tokenConfig.stableTokenSymbol}`}
-              >
-                +10
               </button>
             </div>
           </div>
