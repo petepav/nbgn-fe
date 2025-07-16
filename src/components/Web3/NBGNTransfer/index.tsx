@@ -147,18 +147,31 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               value={recipient}
               onChange={e => setRecipient(e.target.value)}
               placeholder="0x..."
-              className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 pr-48 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowScanner(true)}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-sm bg-blue-50 border border-blue-200 text-blue-600 rounded hover:bg-blue-100 transition-colors"
-              title="Scan QR Code"
-            >
-              <i className="fas fa-qrcode mr-1"></i>
-              Сканирай QR код
-            </button>
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="px-3 py-1 text-sm bg-blue-50 border border-blue-200 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                title="Scan QR Code"
+              >
+                <i className="fas fa-qrcode mr-1"></i>
+                Сканирай QR код
+              </button>
+              {recipient && (
+                <button
+                  type="button"
+                  onClick={() => setRecipient('')}
+                  className="px-3 py-1 text-sm bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                  title="Clear"
+                >
+                  <i className="fas fa-times mr-1"></i>
+                  Изчисти
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

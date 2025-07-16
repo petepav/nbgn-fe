@@ -15,7 +15,6 @@ import TokenInfoExplainer from './TokenInfoExplainer';
 import { useAppState } from '../contexts/AppContext';
 import { useTokenContext } from '../contexts/TokenContext';
 import { BottomNavigation } from './BottomNavigation';
-import styles from './BottomNavigation/BottomNavigation.module.css';
 
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
@@ -101,18 +100,9 @@ export const AppContent: React.FC = () => {
 
         {user.address && (
           <>
-            <div className={`mt-8 w-full max-w-2xl ${styles.contentWrapper}`}>
+            <div className="mt-8 w-full max-w-2xl">
               {/* Network Warning for selected token */}
               <NetworkWarning />
-
-              {/* Desktop Navigation - Only show on larger screens */}
-              <div className="hidden md:block">
-                <BottomNavigation
-                  activeWidget={activeWidget}
-                  onWidgetChange={handleWidgetChange}
-                  selectedToken={selectedToken}
-                />
-              </div>
 
               {/* Widget Content */}
               {activeWidget === 'send' && (
@@ -122,10 +112,8 @@ export const AppContent: React.FC = () => {
               {activeWidget === 'history' && (
                 <TransactionHistory onNavigateToSend={handleNavigateToSend} />
               )}
-            </div>
 
-            {/* Mobile Navigation - Fixed at bottom */}
-            <div className="block md:hidden">
+              {/* Bottom Navigation - Positioned after widgets */}
               <BottomNavigation
                 activeWidget={activeWidget}
                 onWidgetChange={handleWidgetChange}

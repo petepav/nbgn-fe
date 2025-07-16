@@ -82,7 +82,11 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
     } catch {
       return null;
     }
-  }, [web3.provider, tokenConfig]);
+  }, [
+    web3.provider,
+    tokenConfig.stableTokenAddress,
+    tokenConfig.stableTokenSymbol,
+  ]);
 
   // Function to enrich transactions with EURe amounts and transaction fees
   const enrichTransactionsWithDetails = useCallback(
@@ -153,7 +157,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         }
       }
     },
-    [web3.provider, getStableTokenContract, tokenConfig]
+    [web3.provider, getStableTokenContract, tokenConfig.stableTokenSymbol]
   );
 
   const fetchTransactions = useCallback(
@@ -286,7 +290,8 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         setLoadingMore(false);
       }
     },
-    [user.address, web3.provider, getContract, enrichTransactionsWithDetails]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user.address, web3.provider]
   );
 
   const loadMoreTransactions = () => {
@@ -297,7 +302,8 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   useEffect(() => {
     void fetchTransactions(0, false);
-  }, [fetchTransactions, selectedToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedToken, user.address]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(38)}`;

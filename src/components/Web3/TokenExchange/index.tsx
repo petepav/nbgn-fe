@@ -256,7 +256,15 @@ export const TokenExchange: React.FC = () => {
           </div>
 
           {/* Amount Adjustment Buttons */}
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div
+            style={{
+              marginTop: '8px',
+              marginBottom: '24px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
             <div className="flex gap-1">
               <button
                 type="button"
@@ -336,52 +344,54 @@ export const TokenExchange: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        {needsApproval() ? (
-          <button
-            className="btn btn-primary w-full mt-4"
-            onClick={handleApprove}
-            disabled={
-              !stableAmount || parseFloat(stableAmount) <= 0 || isApproving
-            }
-          >
-            {isApproving ? (
-              <span className="flex items-center justify-center">
-                <i className="fas fa-spinner fa-spin mr-2"></i>
-                {t('web3:exchange.approving')}
-              </span>
-            ) : (
-              <span>
-                <i className="fas fa-check mr-2"></i>
-                {t('web3:exchange.approve', {
-                  token: tokenConfig.stableTokenSymbol,
-                })}
-              </span>
-            )}
-          </button>
-        ) : (
-          <button
-            className="btn btn-primary w-full mt-4"
-            onClick={handleMint}
-            disabled={
-              !stableAmount ||
-              parseFloat(stableAmount) <= 0 ||
-              parseFloat(stableAmount) > parseFloat(stableBalance) ||
-              isMinting
-            }
-          >
-            {isMinting ? (
-              <span className="flex items-center justify-center">
-                <i className="fas fa-spinner fa-spin mr-2"></i>
-                {t('web3:exchange.minting')}
-              </span>
-            ) : (
-              <span>
-                <i className="fas fa-coins mr-2"></i>
-                {t('web3:exchange.mint', { token: tokenConfig.symbol })}
-              </span>
-            )}
-          </button>
-        )}
+        <div style={{ marginTop: '32px' }}>
+          {needsApproval() ? (
+            <button
+              className="btn btn-primary w-full"
+              onClick={handleApprove}
+              disabled={
+                !stableAmount || parseFloat(stableAmount) <= 0 || isApproving
+              }
+            >
+              {isApproving ? (
+                <span className="flex items-center justify-center">
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  {t('web3:exchange.approving')}
+                </span>
+              ) : (
+                <span>
+                  <i className="fas fa-check mr-2"></i>
+                  {t('web3:exchange.approve', {
+                    token: tokenConfig.stableTokenSymbol,
+                  })}
+                </span>
+              )}
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary w-full"
+              onClick={handleMint}
+              disabled={
+                !stableAmount ||
+                parseFloat(stableAmount) <= 0 ||
+                parseFloat(stableAmount) > parseFloat(stableBalance) ||
+                isMinting
+              }
+            >
+              {isMinting ? (
+                <span className="flex items-center justify-center">
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  {t('web3:exchange.minting')}
+                </span>
+              ) : (
+                <span>
+                  <i className="fas fa-coins mr-2"></i>
+                  {t('web3:exchange.mint', { token: tokenConfig.symbol })}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
 
         {/* Transaction Status */}
         <TransactionStatus status={status} hash={hash} error={error} />

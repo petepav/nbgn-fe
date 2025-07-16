@@ -28,9 +28,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div className={styles.iconWrapper}>
             <i className={`fas fa-paper-plane ${styles.icon}`}></i>
           </div>
-          <span className={styles.label}>
-            {t('web3:transaction.sendShort', 'Изпрати')}
-          </span>
         </button>
 
         <button
@@ -42,9 +39,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div className={styles.iconWrapper}>
             <i className={`fas fa-exchange-alt ${styles.icon}`}></i>
           </div>
-          <span className={styles.label}>
-            {t('web3:trade.title', 'Търгувай')}
-          </span>
         </button>
 
         <button
@@ -56,9 +50,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div className={styles.iconWrapper}>
             <i className={`fas fa-clock-rotate-left ${styles.icon}`}></i>
           </div>
-          <span className={styles.label}>
-            {t('web3:transaction.historyShort', 'История')}
-          </span>
         </button>
       </div>
     </nav>

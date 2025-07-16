@@ -8,7 +8,7 @@ interface MoneriumExplainerProps {
 
 const MoneriumExplainer: React.FC<MoneriumExplainerProps> = ({ isVisible }) => {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!isVisible) return null;
 

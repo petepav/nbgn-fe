@@ -6,7 +6,7 @@ import styles from './TokenInfoExplainer.module.css';
 const TokenInfoExplainer: React.FC = () => {
   const { t } = useTranslation();
   const { selectedToken, getTokenConfig } = useTokenContext();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [addingToMetaMask, setAddingToMetaMask] = useState(false);
 
   const tokenConfig = getTokenConfig();

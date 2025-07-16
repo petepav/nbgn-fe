@@ -148,7 +148,15 @@ export const TokenRedeem: React.FC = () => {
           </div>
 
           {/* Amount Adjustment Buttons */}
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div
+            style={{
+              marginTop: '8px',
+              marginBottom: '24px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
             <div className="flex gap-1">
               <button
                 type="button"
@@ -228,35 +236,31 @@ export const TokenRedeem: React.FC = () => {
           </div>
         )}
 
-        {/* Warning Message */}
-        <div className="warning-box">
-          <i className="fas fa-exclamation-triangle mr-2"></i>
-          {t('web3:redeem.warning', { token: tokenConfig.symbol })}
-        </div>
-
         {/* Submit Button */}
-        <button
-          type="submit"
-          className="btn btn-danger w-full"
-          disabled={
-            !tokenAmount ||
-            parseFloat(tokenAmount) <= 0 ||
-            parseFloat(tokenAmount) > parseFloat(rawBalance) ||
-            isRedeeming
-          }
-        >
-          {isRedeeming ? (
-            <span className="flex items-center justify-center">
-              <i className="fas fa-spinner fa-spin mr-2"></i>
-              {t('web3:redeem.redeeming')}
-            </span>
-          ) : (
-            <span>
-              <i className="fas fa-fire mr-2"></i>
-              {t('web3:redeem.submit', { token: tokenConfig.symbol })}
-            </span>
-          )}
-        </button>
+        <div style={{ marginTop: '32px' }}>
+          <button
+            type="submit"
+            className="btn btn-danger w-full"
+            disabled={
+              !tokenAmount ||
+              parseFloat(tokenAmount) <= 0 ||
+              parseFloat(tokenAmount) > parseFloat(rawBalance) ||
+              isRedeeming
+            }
+          >
+            {isRedeeming ? (
+              <span className="flex items-center justify-center">
+                <i className="fas fa-spinner fa-spin mr-2"></i>
+                {t('web3:redeem.redeeming')}
+              </span>
+            ) : (
+              <span>
+                <i className="fas fa-fire mr-2"></i>
+                {t('web3:redeem.submit', { token: tokenConfig.symbol })}
+              </span>
+            )}
+          </button>
+        </div>
 
         {/* Transaction Status */}
         <TransactionStatus status={status} hash={hash} error={error} />

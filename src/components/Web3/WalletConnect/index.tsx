@@ -15,6 +15,7 @@ export const WalletConnect: React.FC = () => {
   const { user } = useAppState();
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   // Copy address to clipboard
   const copyAddress = async () => {
@@ -61,78 +62,98 @@ export const WalletConnect: React.FC = () => {
   return (
     <div className="wallet-connect">
       {user.address ? (
-        tokenLoading ? (
-          <div className="loader-container">
-            <div className="red-loader"></div>
+        <div className="connected-wallet">
+          <div
+            className="flex items-center justify-between cursor-pointer p-3 -m-3 mb-3 hover:bg-gray-50 rounded-lg transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <h3 className="text-lg font-semibold flex items-center">
+              <i className="fas fa-wallet mr-2 text-green-600"></i>
+              {t('web3:wallet.title', 'Портфейл')}
+            </h3>
+            <button
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label={isOpen ? t('common:hide') : t('common:show')}
+            >
+              <i className={`fas fa-chevron-${isOpen ? 'up' : 'down'}`}></i>
+            </button>
           </div>
-        ) : (
-          <div className="connected-wallet">
-            <p className="flex items-center justify-center mb-4">
-              <i className="fas fa-check-circle text-green-500 mr-2"></i>
-              {t('web3:wallet.connected')}
-            </p>
 
-            {/* QR Code Display - Always Visible */}
-            <div className="flex justify-center mb-3">
-              <div className="bg-white p-3 rounded-xl border-2 border-gray-200 shadow-sm">
-                <QRCodeSVG
-                  value={user.address}
-                  size={160}
-                  level="H"
-                  includeMargin={true}
-                  bgColor="#FFFFFF"
-                  fgColor="#000000"
-                />
+          {isOpen &&
+            (tokenLoading ? (
+              <div className="loader-container">
+                <div className="red-loader"></div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <p className="flex items-center justify-center mb-4">
+                  <i className="fas fa-check-circle text-green-500 mr-2"></i>
+                  {t('web3:wallet.connected')}
+                </p>
 
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <p className="address text-sm font-mono">
-                {user.address.substring(0, 6)}...{user.address.substring(38)}
-              </p>
-              <button
-                onClick={copyAddress}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm"
-                style={{
-                  backgroundColor: copiedAddress
-                    ? '#f0fdf4'
-                    : isHovered
-                      ? '#e5e7eb'
-                      : '#f3f4f6',
-                  borderColor: copiedAddress
-                    ? '#bbf7d0'
-                    : isHovered
-                      ? '#9ca3af'
-                      : '#d1d5db',
-                  color: copiedAddress ? '#15803d' : '#374151',
-                }}
-                title={copiedAddress ? 'Copied!' : 'Copy address'}
-              >
-                <i
-                  className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-2`}
-                ></i>
-                {copiedAddress ? 'Копирано!' : 'Копирай'}
-              </button>
-            </div>
-            <p className="balance">
-              {formattedBalance} {selectedToken}
-            </p>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={refresh}
-                className="refresh-button"
-                title="Refresh balance"
-              >
-                🔄
-              </button>
-              <button onClick={disconnectWallet}>
-                {t('web3:wallet.disconnect')}
-              </button>
-            </div>
-          </div>
-        )
+                {/* QR Code Display - Always Visible */}
+                <div className="flex justify-center mb-3">
+                  <div className="bg-white p-3 rounded-xl border-2 border-gray-200 shadow-sm">
+                    <QRCodeSVG
+                      value={user.address}
+                      size={160}
+                      level="H"
+                      includeMargin={true}
+                      bgColor="#FFFFFF"
+                      fgColor="#000000"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <p className="address text-sm font-mono">
+                    {user.address.substring(0, 6)}...
+                    {user.address.substring(38)}
+                  </p>
+                  <button
+                    onClick={copyAddress}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border shadow-sm"
+                    style={{
+                      backgroundColor: copiedAddress
+                        ? '#f0fdf4'
+                        : isHovered
+                          ? '#e5e7eb'
+                          : '#f3f4f6',
+                      borderColor: copiedAddress
+                        ? '#bbf7d0'
+                        : isHovered
+                          ? '#9ca3af'
+                          : '#d1d5db',
+                      color: copiedAddress ? '#15803d' : '#374151',
+                    }}
+                    title={copiedAddress ? 'Copied!' : 'Copy address'}
+                  >
+                    <i
+                      className={`fas ${copiedAddress ? 'fa-check' : 'fa-copy'} mr-2`}
+                    ></i>
+                    {copiedAddress ? 'Копирано!' : 'Копирай'}
+                  </button>
+                </div>
+                <p className="balance">
+                  {formattedBalance} {selectedToken}
+                </p>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={refresh}
+                    className="refresh-button"
+                    title="Refresh balance"
+                  >
+                    🔄
+                  </button>
+                  <button onClick={disconnectWallet}>
+                    {t('web3:wallet.disconnect')}
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
       ) : (
         <button
           onClick={() => connectWallet(false)}
