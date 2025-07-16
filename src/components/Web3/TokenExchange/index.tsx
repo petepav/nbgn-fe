@@ -263,6 +263,7 @@ export const TokenExchange: React.FC = () => {
               display: 'flex',
               flexWrap: 'wrap',
               gap: '8px',
+              justifyContent: 'center',
             }}
           >
             <div className="flex gap-1">
