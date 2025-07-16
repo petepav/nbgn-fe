@@ -22,7 +22,8 @@ interface Transaction {
 }
 
 interface TransactionHistoryProps {
-  onNavigateToSend?: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onNavigateToSend?: (address: string) => void;
 }
 
 export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
