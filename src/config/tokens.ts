@@ -48,7 +48,7 @@ export const SUPPORTED_TOKENS: Record<string, TokenConfig> = {
     chainName: 'Arbitrum One',
   },
   GBGN: {
-    address: '0x...', // TODO: Add deployed GBGN contract address
+    address: '0x0000000000000000000000000000000000000000', // TODO: Add deployed GBGN contract address
     symbol: 'GBGN',
     name: 'Gold Backed Good Night',
     decimals: 18,

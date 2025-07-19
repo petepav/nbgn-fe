@@ -339,7 +339,7 @@ export const TokenExchange: React.FC = () => {
           }
 
           return await tokenContract.mint(amountWei);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Mint failed with error:', error);
           if (error.message?.includes('transfer amount exceeds balance')) {
             // This error is from the DBGN contract trying to transferFrom USDC
@@ -378,12 +378,22 @@ export const TokenExchange: React.FC = () => {
       return;
     }
 
-    // Apply a safety buffer of 0.02 USDC to account for gas and precision issues
-    // Then round down to 2 decimals for simplicity
-    const safeBalance = Math.floor((balance - 0.02) * 100) / 100;
+    // Apply a safety buffer based on the token type
+    let buffer = 0;
+    if (tokenConfig.stableTokenSymbol === 'USDC') {
+      buffer = 0.02; // 0.02 USDC buffer
+    } else if (tokenConfig.stableTokenSymbol === 'PAXG') {
+      buffer = 0.0001; // Much smaller buffer for PAXG since it's expensive
+    } else {
+      buffer = 0.01; // Default buffer for other tokens
+    }
 
-    // Format to 2 decimal places
-    const formatted = Math.max(0, safeBalance).toFixed(2);
+    // Only apply buffer if balance is greater than buffer
+    const safeBalance = balance > buffer ? balance - buffer : balance;
+
+    // Format to appropriate decimal places
+    const decimals = tokenConfig.stableTokenSymbol === 'PAXG' ? 6 : 2;
+    const formatted = safeBalance.toFixed(decimals);
 
     setStableAmount(formatted);
   };
@@ -393,9 +403,20 @@ export const TokenExchange: React.FC = () => {
     const newAmount = Math.max(0, currentAmount + delta);
     const maxBalance = parseFloat(stableBalance) || 0;
 
-    if (newAmount <= maxBalance - 0.02) {
-      // Round to 2 decimals for consistency
-      const formatted = newAmount.toFixed(2);
+    // Use appropriate buffer based on token
+    let buffer = 0;
+    if (tokenConfig.stableTokenSymbol === 'USDC') {
+      buffer = 0.02;
+    } else if (tokenConfig.stableTokenSymbol === 'PAXG') {
+      buffer = 0.0001;
+    } else {
+      buffer = 0.01;
+    }
+
+    if (newAmount <= maxBalance - buffer) {
+      // Format with appropriate decimals
+      const decimals = tokenConfig.stableTokenSymbol === 'PAXG' ? 6 : 2;
+      const formatted = newAmount.toFixed(decimals);
       setStableAmount(formatted);
     } else {
       // Use the same logic as handleMaxAmount for consistency
