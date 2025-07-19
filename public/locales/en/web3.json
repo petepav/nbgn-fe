@@ -81,6 +81,7 @@
     "createAnother": "Create Another Voucher",
     "redeemInstructions": "To redeem a voucher, click on the voucher link you received.",
     "redeemTitle": "Redeem NBGN Voucher",
+    "redeemIntro": "Enter your voucher password to claim your tokens",
     "enterPassword": "Enter Voucher Password",
     "redeeming": "Redeeming...",
     "redeemButton": "Redeem Voucher",

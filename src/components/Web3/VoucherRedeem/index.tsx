@@ -381,10 +381,20 @@ export const VoucherRedeem: React.FC = () => {
   return (
     <div className="voucher-redeem-container">
       <div className="voucher-redeem-card">
-        <h2 className="text-2xl font-bold mb-6">
-          <i className="fas fa-ticket mr-2"></i>
+        <div className="voucher-icon">
+          <i className="fas fa-gift"></i>
+        </div>
+
+        <h2 className="text-2xl font-bold mb-2">
           {t('web3:voucher.redeemTitle', 'Redeem NBGN Voucher')}
         </h2>
+
+        <p className="intro-text">
+          {t(
+            'web3:voucher.redeemIntro',
+            'Enter your voucher password to claim your tokens'
+          )}
+        </p>
 
         {error && (
           <div className="error-message">
