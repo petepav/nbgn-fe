@@ -96,6 +96,22 @@
     "invalidLink": "Invalid voucher link",
     "wrongPassword": "Incorrect password",
     "expired": "This voucher has expired",
-    "redeemError": "Failed to redeem voucher"
+    "redeemError": "Failed to redeem voucher",
+    "chooseRedeemMethod": "Choose how to redeem your voucher:",
+    "transferToWallet": "Transfer to My Wallet",
+    "importPrivateKey": "Import Private Key",
+    "transferDescription": "Enter your wallet address and we'll transfer the tokens directly to you. No gas fees required!",
+    "yourWalletAddress": "Your Wallet Address",
+    "invalidTargetAddress": "Invalid wallet address",
+    "transferError": "Failed to transfer tokens",
+    "transferring": "Transferring...",
+    "transferButton": "Transfer Tokens",
+    "transferComplete": "Transfer Complete!",
+    "transferSuccessMsg": "The tokens have been transferred to your wallet.",
+    "viewTransaction": "View Transaction",
+    "gasWarning": "Note: You will need ETH/ARB for gas fees to transfer tokens from this wallet.",
+    "noWallet": "Please install MetaMask to transfer tokens",
+    "noGasInVoucher": "The voucher wallet has no gas. Please use the \"Import Private Key\" option instead.",
+    "noTokens": "This voucher has already been redeemed"
   }
 }

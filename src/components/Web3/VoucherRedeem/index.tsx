@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ethers } from 'ethers';
 import {
   parseVoucherFromLink,
   decryptVoucher,
   isVoucherExpired,
 } from '../../../utils/voucher';
+import { SUPPORTED_TOKENS } from '../../../config/tokens';
+import { NBGN_ABI } from '../../../contracts/abis/NBGN';
 import './VoucherRedeem.css';
 
 export const VoucherRedeem: React.FC = () => {
@@ -18,6 +21,13 @@ export const VoucherRedeem: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [decryptedData, setDecryptedData] =
     useState<ReturnType<typeof decryptVoucher>>(null);
+  const [redeemMethod, setRedeemMethod] = useState<'import' | 'transfer'>(
+    'transfer'
+  );
+  const [targetWallet, setTargetWallet] = useState('');
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferSuccess, setTransferSuccess] = useState(false);
+  const [txHash, setTxHash] = useState('');
 
   useEffect(() => {
     // Validate voucher data on mount
@@ -54,28 +64,7 @@ export const VoucherRedeem: React.FC = () => {
       }
 
       setDecryptedData(voucher);
-
-      // Import the wallet to MetaMask
-      if (window.ethereum) {
-        try {
-          // First, prompt user to connect wallet if not connected
-          await window.ethereum.request({
-            method: 'eth_requestAccounts',
-          });
-
-          // Import the private key
-          // Note: MetaMask doesn't have a direct API to import private keys
-          // We'll show the private key for manual import
-          setSuccess(true);
-        } catch (err) {
-          console.error('Failed to import wallet:', err);
-          // Still show success since we have the private key
-          setSuccess(true);
-        }
-      } else {
-        // No MetaMask, just show the private key
-        setSuccess(true);
-      }
+      setSuccess(true);
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error
@@ -98,6 +87,93 @@ export const VoucherRedeem: React.FC = () => {
     }
   };
 
+  const handleTransfer = async () => {
+    if (!decryptedData || !targetWallet) return;
+
+    setIsTransferring(true);
+    setError('');
+
+    try {
+      // Validate target wallet address
+      if (!ethers.isAddress(targetWallet)) {
+        throw new Error(
+          t('web3:voucher.invalidTargetAddress', 'Invalid wallet address')
+        );
+      }
+
+      // Get the token config
+      const tokenConfig = SUPPORTED_TOKENS[decryptedData.token];
+      if (!tokenConfig) {
+        throw new Error('Invalid token');
+      }
+
+      // Create provider and check if user has a connected wallet
+      if (!window.ethereum) {
+        throw new Error(
+          t(
+            'web3:voucher.noWallet',
+            'Please install MetaMask to transfer tokens'
+          )
+        );
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      // Check if voucher wallet has gas
+      const voucherWallet = new ethers.Wallet(
+        decryptedData.privateKey,
+        provider
+      );
+      const gasBalance = await provider.getBalance(voucherWallet.address);
+
+      if (gasBalance === 0n) {
+        // No gas in voucher wallet - we'll need the user to send the transaction
+
+        // Can't use transferFrom without approval from voucher wallet
+        // For now, we'll just inform the user they need to use import option
+        throw new Error(
+          t(
+            'web3:voucher.noGasInVoucher',
+            'The voucher wallet has no gas. Please use the "Import Private Key" option instead.'
+          )
+        );
+      }
+
+      // Voucher wallet has gas, proceed with transfer
+      const tokenContract = new ethers.Contract(
+        tokenConfig.address,
+        NBGN_ABI,
+        voucherWallet
+      );
+
+      // Get token balance
+      const balance = await tokenContract.balanceOf(voucherWallet.address);
+
+      if (balance === 0n) {
+        throw new Error(
+          t('web3:voucher.noTokens', 'This voucher has already been redeemed')
+        );
+      }
+
+      // Transfer all tokens
+      const tx = await tokenContract.transfer(targetWallet, balance);
+      setTxHash(tx.hash);
+
+      // Wait for confirmation
+      await tx.wait();
+
+      setTransferSuccess(true);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : t('web3:voucher.transferError', 'Failed to transfer tokens');
+      setError(errorMessage);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
   if (success && decryptedData) {
     return (
       <div className="voucher-redeem-container">
@@ -115,57 +191,180 @@ export const VoucherRedeem: React.FC = () => {
               <strong>{t('web3:voucher.amount', 'Amount')}:</strong>{' '}
               {decryptedData.amount} {decryptedData.token}
             </p>
-            <p className="detail-item">
-              <strong>
-                {t('web3:voucher.walletAddress', 'Wallet Address')}:
-              </strong>
-              <span className="mono-text">{decryptedData.address}</span>
-            </p>
           </div>
 
-          <div className="import-instructions">
-            <h3 className="text-lg font-semibold mb-3">
-              {t('web3:voucher.importInstructions', 'To access your funds:')}
-            </h3>
-
-            <ol className="instruction-list">
-              <li>{t('web3:voucher.step1', 'Open MetaMask')}</li>
-              <li>{t('web3:voucher.step2', 'Click on your account icon')}</li>
-              <li>{t('web3:voucher.step3', 'Select "Import Account"')}</li>
-              <li>{t('web3:voucher.step4', 'Choose "Private Key" option')}</li>
-              <li>{t('web3:voucher.step5', 'Paste the private key below')}</li>
-            </ol>
-
-            <div className="private-key-container">
-              <div className="private-key-label">
-                <i className="fas fa-key mr-2"></i>
-                {t('web3:voucher.privateKey', 'Private Key')}
-              </div>
-              <div className="private-key-box">
-                <input
-                  type="password"
-                  value={decryptedData.privateKey}
-                  readOnly
-                  className="private-key-input"
-                  onClick={e => e.currentTarget.select()}
-                />
-                <button
-                  onClick={copyPrivateKey}
-                  className="copy-button"
-                  title={t('common:copy', 'Copy')}
-                >
-                  <i className="fas fa-copy"></i>
-                </button>
-              </div>
-              <p className="security-warning">
-                <i className="fas fa-exclamation-triangle mr-2"></i>
+          {transferSuccess ? (
+            <div className="transfer-success">
+              <i className="fas fa-check-circle text-green-600 text-5xl mb-4"></i>
+              <h3 className="text-xl font-bold mb-2">
+                {t('web3:voucher.transferComplete', 'Transfer Complete!')}
+              </h3>
+              <p className="text-gray-600 mb-4">
                 {t(
-                  'web3:voucher.privateKeyWarning',
-                  'Keep this private key secure! Anyone with this key can access the funds.'
+                  'web3:voucher.transferSuccessMsg',
+                  'The tokens have been transferred to your wallet.'
                 )}
               </p>
+              {txHash && (
+                <a
+                  href={`https://arbiscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {t('web3:voucher.viewTransaction', 'View Transaction')}
+                </a>
+              )}
+              <button
+                onClick={() => navigate('/')}
+                className="btn btn-primary w-full mt-6"
+              >
+                <i className="fas fa-home mr-2"></i>
+                {t('common:goHome', 'Go to Home')}
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="redeem-options">
+              <h3 className="text-lg font-semibold mb-4">
+                {t(
+                  'web3:voucher.chooseRedeemMethod',
+                  'Choose how to redeem your voucher:'
+                )}
+              </h3>
+
+              <div className="method-selector">
+                <button
+                  className={`method-button ${redeemMethod === 'transfer' ? 'active' : ''}`}
+                  onClick={() => setRedeemMethod('transfer')}
+                >
+                  <i className="fas fa-paper-plane mr-2"></i>
+                  {t('web3:voucher.transferToWallet', 'Transfer to My Wallet')}
+                </button>
+                <button
+                  className={`method-button ${redeemMethod === 'import' ? 'active' : ''}`}
+                  onClick={() => setRedeemMethod('import')}
+                >
+                  <i className="fas fa-key mr-2"></i>
+                  {t('web3:voucher.importPrivateKey', 'Import Private Key')}
+                </button>
+              </div>
+
+              {redeemMethod === 'transfer' ? (
+                <div className="transfer-section">
+                  <p className="text-sm text-gray-600 mb-4">
+                    {t(
+                      'web3:voucher.transferDescription',
+                      "Enter your wallet address and we'll transfer the tokens directly to you. No gas fees required!"
+                    )}
+                  </p>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      {t(
+                        'web3:voucher.yourWalletAddress',
+                        'Your Wallet Address'
+                      )}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={targetWallet}
+                      onChange={e => setTargetWallet(e.target.value)}
+                      placeholder="0x..."
+                      disabled={isTransferring}
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="error-message mb-4">
+                      <i className="fas fa-exclamation-circle mr-2"></i>
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleTransfer}
+                    className="btn btn-primary w-full"
+                    disabled={!targetWallet || isTransferring}
+                  >
+                    {isTransferring ? (
+                      <span className="flex items-center justify-center">
+                        <i className="fas fa-spinner fa-spin mr-2"></i>
+                        {t('web3:voucher.transferring', 'Transferring...')}
+                      </span>
+                    ) : (
+                      <span>
+                        <i className="fas fa-paper-plane mr-2"></i>
+                        {t('web3:voucher.transferButton', 'Transfer Tokens')}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="import-instructions">
+                  <h3 className="text-lg font-semibold mb-3">
+                    {t(
+                      'web3:voucher.importInstructions',
+                      'To access your funds:'
+                    )}
+                  </h3>
+
+                  <ol className="instruction-list">
+                    <li>{t('web3:voucher.step1', 'Open MetaMask')}</li>
+                    <li>
+                      {t('web3:voucher.step2', 'Click on your account icon')}
+                    </li>
+                    <li>
+                      {t('web3:voucher.step3', 'Select "Import Account"')}
+                    </li>
+                    <li>
+                      {t('web3:voucher.step4', 'Choose "Private Key" option')}
+                    </li>
+                    <li>
+                      {t('web3:voucher.step5', 'Paste the private key below')}
+                    </li>
+                  </ol>
+
+                  <div className="private-key-container">
+                    <div className="private-key-label">
+                      <i className="fas fa-key mr-2"></i>
+                      {t('web3:voucher.privateKey', 'Private Key')}
+                    </div>
+                    <div className="private-key-box">
+                      <input
+                        type="password"
+                        value={decryptedData.privateKey}
+                        readOnly
+                        className="private-key-input"
+                        onClick={e => e.currentTarget.select()}
+                      />
+                      <button
+                        onClick={copyPrivateKey}
+                        className="copy-button"
+                        title={t('common:copy', 'Copy')}
+                      >
+                        <i className="fas fa-copy"></i>
+                      </button>
+                    </div>
+                    <p className="security-warning">
+                      <i className="fas fa-exclamation-triangle mr-2"></i>
+                      {t(
+                        'web3:voucher.privateKeyWarning',
+                        'Keep this private key secure! Anyone with this key can access the funds.'
+                      )}
+                    </p>
+                    <p className="gas-warning">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      {t(
+                        'web3:voucher.gasWarning',
+                        'Note: You will need ETH/ARB for gas fees to transfer tokens from this wallet.'
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             onClick={() => navigate('/')}

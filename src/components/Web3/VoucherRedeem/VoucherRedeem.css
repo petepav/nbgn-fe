@@ -115,4 +115,60 @@
   font-size: 14px;
   display: flex;
   align-items: center;
+  margin-bottom: 12px;
+}
+
+.gas-warning {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.method-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.method-button {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.method-button:hover {
+  border-color: #ec4899;
+  color: #374151;
+}
+
+.method-button.active {
+  border-color: #ec4899;
+  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+  color: #be185d;
+}
+
+.transfer-section {
+  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+}
+
+.transfer-success {
+  text-align: center;
+  padding: 32px;
+}
+
+.redeem-options {
+  margin-top: 24px;
 }
