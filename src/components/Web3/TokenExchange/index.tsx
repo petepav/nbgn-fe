@@ -80,7 +80,10 @@ export const TokenExchange: React.FC = () => {
         // Get stable token balance
         const balance = await stableContract.balanceOf(user.address);
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
+        console.log('Raw balance from contract:', balance.toString());
+        console.log('Decimals:', decimals);
         const formattedBalance = ethers.formatUnits(balance, decimals);
+        console.log('Formatted balance:', formattedBalance);
         setStableBalance(formattedBalance);
 
         // Get current allowance
@@ -166,7 +169,27 @@ export const TokenExchange: React.FC = () => {
         if (!tokenContract) throw new Error('Failed to get token contract');
 
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
-        const amountWei = ethers.parseUnits(stableAmount, decimals);
+
+        // For USDC, reduce amount by 0.1% to avoid any precision issues
+        let adjustedAmount = stableAmount;
+        if (tokenConfig.stableTokenSymbol === 'USDC') {
+          const numAmount = parseFloat(stableAmount);
+          // Reduce by 0.1% and round down to 6 decimals
+          const reduced = numAmount * 0.999;
+          adjustedAmount = Math.floor(reduced * 1000000) / 1000000 + '';
+        }
+
+        // Log the exact values for debugging
+        console.log('Minting with values:', {
+          originalAmount: stableAmount,
+          adjustedAmount,
+          stableBalance,
+          decimals,
+          stableTokenSymbol: tokenConfig.stableTokenSymbol,
+        });
+
+        const amountWei = ethers.parseUnits(adjustedAmount, decimals);
+        console.log('Amount in wei:', amountWei.toString());
 
         return await tokenContract.mint(amountWei);
       });
@@ -188,7 +211,21 @@ export const TokenExchange: React.FC = () => {
   };
 
   const handleMaxAmount = () => {
-    setStableAmount(stableBalance);
+    // Parse the balance and apply proper decimal formatting
+    const balance = parseFloat(stableBalance);
+    if (isNaN(balance) || balance === 0) {
+      setStableAmount('0');
+      return;
+    }
+
+    // Apply a safety buffer of 0.01 USDC to account for any precision issues
+    // Then round down to 2 decimals for simplicity
+    const safeBalance = Math.floor((balance - 0.01) * 100) / 100;
+
+    // Format to 2 decimal places
+    const formatted = Math.max(0, safeBalance).toFixed(2);
+
+    setStableAmount(formatted);
   };
 
   const adjustAmount = (delta: number) => {
@@ -196,10 +233,13 @@ export const TokenExchange: React.FC = () => {
     const newAmount = Math.max(0, currentAmount + delta);
     const maxBalance = parseFloat(stableBalance) || 0;
 
-    if (newAmount <= maxBalance) {
-      setStableAmount(newAmount.toFixed(2));
+    if (newAmount <= maxBalance - 0.01) {
+      // Round to 2 decimals for consistency
+      const formatted = newAmount.toFixed(2);
+      setStableAmount(formatted);
     } else {
-      setStableAmount(maxBalance.toFixed(2));
+      // Use the same logic as handleMaxAmount for consistency
+      handleMaxAmount();
     }
   };
 
@@ -240,7 +280,26 @@ export const TokenExchange: React.FC = () => {
               type="number"
               className="form-input"
               value={stableAmount}
-              onChange={e => setStableAmount(e.target.value)}
+              onChange={e => {
+                const value = e.target.value;
+                // Allow user to type, but validate on blur
+                setStableAmount(value);
+              }}
+              onBlur={e => {
+                const value = parseFloat(e.target.value);
+                if (!isNaN(value) && value > 0) {
+                  // Round to 2 decimals and ensure not exceeding balance with buffer
+                  const maxBalance = parseFloat(stableBalance) || 0;
+                  const safeMax = Math.floor((maxBalance - 0.01) * 100) / 100;
+                  const rounded = Math.min(
+                    Math.floor(value * 100) / 100,
+                    safeMax
+                  );
+                  setStableAmount(Math.max(0, rounded).toFixed(2));
+                } else if (e.target.value === '') {
+                  setStableAmount('');
+                }
+              }}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -350,7 +409,7 @@ export const TokenExchange: React.FC = () => {
           <div className="exchange-info">
             <div className="exchange-rate">
               {t('web3:exchange.rate')}: 1 {tokenConfig.stableTokenSymbol} ={' '}
-              {getExchangeRate(selectedToken)} {tokenConfig.symbol}
+              {getExchangeRate(selectedToken).toFixed(2)} {tokenConfig.symbol}
             </div>
             <div className="expected-amount">
               {t('web3:exchange.willReceive')}:{' '}
