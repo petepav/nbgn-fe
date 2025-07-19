@@ -38,7 +38,7 @@ export const VoucherWidget: React.FC = () => {
   const handleCreateVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!amount || !password || password !== confirmPassword) {
+    if (!amount || !password || password !== confirmPassword || !user.address) {
       return;
     }
 
