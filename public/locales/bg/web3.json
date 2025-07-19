@@ -121,6 +121,7 @@
     "recoveringEth": "Възстановява се ETH...",
     "noEthToRecover": "Няма оставащ ETH за възстановяване",
     "ethTooLowForGas": "ETH балансът е твърде нисък за покриване на таксите за газ",
-    "ethRecoveryError": "Неуспешно възстановяване на ETH"
+    "ethRecoveryError": "Неуспешно възстановяване на ETH",
+    "ethReturnedToCreator": "Оставащият ETH ({{amount}} ETH) беше върнат на създателя на ваучера"
   }
 }

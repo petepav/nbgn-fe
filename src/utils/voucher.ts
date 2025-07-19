@@ -8,6 +8,7 @@ export interface VoucherData {
   token: string;
   createdAt: number;
   expiresAt?: number;
+  creatorAddress: string;
 }
 
 export interface EncryptedVoucher {

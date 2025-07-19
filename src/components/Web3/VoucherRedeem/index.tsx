@@ -30,7 +30,6 @@ export const VoucherRedeem: React.FC = () => {
   const [txHash, setTxHash] = useState('');
   const [showEthRecovery, setShowEthRecovery] = useState(false);
   const [ethBalance, setEthBalance] = useState('0');
-  const [isRecoveringEth, setIsRecoveringEth] = useState(false);
 
   useEffect(() => {
     // Validate voucher data on mount
@@ -167,11 +166,33 @@ export const VoucherRedeem: React.FC = () => {
 
       setTransferSuccess(true);
 
-      // Check if there's remaining ETH in the voucher
+      // Check if there's remaining ETH in the voucher and automatically return it to creator
       const remainingEth = await provider.getBalance(voucherWallet.address);
       if (remainingEth > 0) {
-        setEthBalance(ethers.formatEther(remainingEth));
-        setShowEthRecovery(true);
+        try {
+          // Calculate gas cost for transfer
+          const gasPrice = await provider.getFeeData();
+          const gasCost = BigInt(21000) * (gasPrice.gasPrice || BigInt(0));
+
+          if (remainingEth > gasCost) {
+            // Send remaining ETH minus gas cost back to creator
+            const amountToSend = remainingEth - gasCost;
+
+            const ethTx = await voucherWallet.sendTransaction({
+              to: decryptedData.creatorAddress,
+              value: amountToSend,
+            });
+
+            await ethTx.wait();
+
+            // Show the amount that was returned
+            setEthBalance(ethers.formatEther(amountToSend));
+            setShowEthRecovery(true); // Still show notification but as completed
+          }
+        } catch (err) {
+          console.error('Failed to return ETH to creator:', err);
+          // Don't block the main flow if ETH return fails
+        }
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -181,64 +202,6 @@ export const VoucherRedeem: React.FC = () => {
       setError(errorMessage);
     } finally {
       setIsTransferring(false);
-    }
-  };
-
-  const handleRecoverEth = async () => {
-    if (!decryptedData || !targetWallet || !showEthRecovery) return;
-
-    setIsRecoveringEth(true);
-    setError('');
-
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const voucherWallet = new ethers.Wallet(
-        decryptedData.privateKey,
-        provider
-      );
-
-      // Get current balance
-      const balance = await provider.getBalance(voucherWallet.address);
-
-      if (balance.toString() === '0') {
-        throw new Error(
-          t('web3:voucher.noEthToRecover', 'No ETH left to recover')
-        );
-      }
-
-      // Calculate gas cost for transfer (21000 gas * current gas price)
-      const gasPrice = await provider.getFeeData();
-      const gasCost = BigInt(21000) * (gasPrice.gasPrice || BigInt(0));
-
-      if (balance <= gasCost) {
-        throw new Error(
-          t(
-            'web3:voucher.ethTooLowForGas',
-            'ETH balance too low to cover gas fees'
-          )
-        );
-      }
-
-      // Send remaining ETH minus gas cost
-      const amountToSend = balance - gasCost;
-
-      const ethTx = await voucherWallet.sendTransaction({
-        to: targetWallet,
-        value: amountToSend,
-      });
-
-      await ethTx.wait();
-
-      setShowEthRecovery(false);
-      setEthBalance('0');
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : t('web3:voucher.ethRecoveryError', 'Failed to recover ETH');
-      setError(errorMessage);
-    } finally {
-      setIsRecoveringEth(false);
     }
   };
 
@@ -286,33 +249,26 @@ export const VoucherRedeem: React.FC = () => {
 
               {showEthRecovery && (
                 <div className="eth-recovery-section">
-                  <div className="eth-recovery-notice">
-                    <i className="fas fa-ethereum mr-2"></i>
+                  <div
+                    className="eth-recovery-notice"
+                    style={{
+                      background:
+                        'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      marginTop: '16px',
+                    }}
+                  >
+                    <i className="fas fa-check-circle mr-2"></i>
                     <span>
                       {t(
-                        'web3:voucher.ethRemaining',
-                        'Remaining ETH in voucher'
+                        'web3:voucher.ethReturnedToCreator',
+                        'Remaining ETH ({{amount}} ETH) was returned to the voucher creator',
+                        { amount: ethBalance }
                       )}
-                      : {ethBalance} ETH
                     </span>
                   </div>
-                  <button
-                    onClick={handleRecoverEth}
-                    className="btn btn-secondary w-full"
-                    disabled={isRecoveringEth}
-                  >
-                    {isRecoveringEth ? (
-                      <span className="flex items-center justify-center">
-                        <i className="fas fa-spinner fa-spin mr-2"></i>
-                        {t('web3:voucher.recoveringEth', 'Recovering ETH...')}
-                      </span>
-                    ) : (
-                      <span>
-                        <i className="fas fa-coins mr-2"></i>
-                        {t('web3:voucher.recoverEth', 'Recover Remaining ETH')}
-                      </span>
-                    )}
-                  </button>
                 </div>
               )}
 

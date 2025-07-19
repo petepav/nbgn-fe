@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
+import { useAppState } from '../../../contexts/AppContext';
 import { useTokenContext } from '../../../contexts/TokenContext';
 import { useToken } from '../../../hooks/useToken';
 import { useTransaction } from '../../../hooks/useTransaction';
@@ -17,6 +18,7 @@ type VoucherMode = 'create' | 'redeem';
 
 export const VoucherWidget: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAppState();
   const { selectedToken, getTokenConfig } = useTokenContext();
   const { formattedBalance, rawBalance, transfer } = useToken();
   const { executeTransaction, status, hash, error } = useTransaction();
@@ -54,6 +56,7 @@ export const VoucherWidget: React.FC = () => {
         token: selectedToken,
         createdAt: Date.now(),
         expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+        creatorAddress: user.address,
       };
 
       // Transfer tokens to voucher wallet

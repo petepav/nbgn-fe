@@ -121,6 +121,7 @@
     "recoveringEth": "Recovering ETH...",
     "noEthToRecover": "No ETH left to recover",
     "ethTooLowForGas": "ETH balance too low to cover gas fees",
-    "ethRecoveryError": "Failed to recover ETH"
+    "ethRecoveryError": "Failed to recover ETH",
+    "ethReturnedToCreator": "Remaining ETH ({{amount}} ETH) was returned to the voucher creator"
   }
 }
