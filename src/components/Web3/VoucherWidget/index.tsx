@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ethers } from 'ethers';
 import { useTokenContext } from '../../../contexts/TokenContext';
 import { useToken } from '../../../hooks/useToken';
 import { useTransaction } from '../../../hooks/useTransaction';
@@ -27,6 +28,8 @@ export const VoucherWidget: React.FC = () => {
   const [voucherLink, setVoucherLink] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+  const [includeGas, setIncludeGas] = useState(true);
+  const [gasAmount] = useState('0.001'); // ~$2-3 worth of ETH/ARB
 
   const tokenConfig = getTokenConfig();
 
@@ -57,6 +60,26 @@ export const VoucherWidget: React.FC = () => {
       await executeTransaction(async () => {
         return await transfer(voucherWallet.address, amount);
       });
+
+      // If includeGas is true, also send some ETH/ARB for gas
+      if (includeGas) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+
+          // Send gas to voucher wallet
+          const gasTx = await signer.sendTransaction({
+            to: voucherWallet.address,
+            value: ethers.parseEther(gasAmount),
+          });
+
+          // Wait for gas transaction to confirm
+          await gasTx.wait();
+        } catch (err) {
+          console.error('Failed to send gas to voucher wallet:', err);
+          // Continue anyway - voucher is still valid, just needs manual gas
+        }
+      }
 
       // Encrypt voucher data
       const encryptedVoucher = encryptVoucher(voucherData, password);
@@ -264,6 +287,31 @@ export const VoucherWidget: React.FC = () => {
                     )}
                   </p>
                 )}
+              </div>
+
+              {/* Include Gas Option */}
+              <div className="gas-option">
+                <label className="gas-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={includeGas}
+                    onChange={e => setIncludeGas(e.target.checked)}
+                    disabled={isCreating}
+                  />
+                  <span>
+                    {t(
+                      'web3:voucher.includeGas',
+                      'Include gas for easy redemption'
+                    )}{' '}
+                    ({gasAmount} ETH/ARB)
+                  </span>
+                </label>
+                <p className="gas-description">
+                  {t(
+                    'web3:voucher.gasDescription',
+                    'Allows recipient to transfer tokens without needing gas'
+                  )}
+                </p>
               </div>
 
               {/* Create Button */}

@@ -66,6 +66,8 @@
     "betaWarning": "This feature is still in beta. Please only use small amounts for testing.",
     "create": "Create Voucher",
     "redeem": "Redeem Voucher",
+    "includeGas": "Include gas for easy redemption",
+    "gasDescription": "Allows recipient to transfer tokens without needing gas",
     "amount": "Voucher Amount",
     "password": "Voucher Password",
     "passwordPlaceholder": "Enter a secure password",
