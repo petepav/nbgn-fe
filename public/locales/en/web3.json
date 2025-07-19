@@ -115,6 +115,12 @@
     "gasWarning": "Note: You will need ETH for gas fees to transfer tokens from this wallet.",
     "noWallet": "Please install MetaMask to transfer tokens",
     "noGasInVoucher": "The voucher wallet has no gas. Please use the \"Import Private Key\" option instead.",
-    "noTokens": "This voucher has already been redeemed"
+    "noTokens": "This voucher has already been redeemed",
+    "ethRemaining": "Remaining ETH in voucher",
+    "recoverEth": "Recover Remaining ETH",
+    "recoveringEth": "Recovering ETH...",
+    "noEthToRecover": "No ETH left to recover",
+    "ethTooLowForGas": "ETH balance too low to cover gas fees",
+    "ethRecoveryError": "Failed to recover ETH"
   }
 }
