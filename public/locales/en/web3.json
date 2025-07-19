@@ -111,7 +111,7 @@
     "transferComplete": "Transfer Complete!",
     "transferSuccessMsg": "The tokens have been transferred to your wallet.",
     "viewTransaction": "View Transaction",
-    "gasWarning": "Note: You will need ETH/ARB for gas fees to transfer tokens from this wallet.",
+    "gasWarning": "Note: You will need ETH for gas fees to transfer tokens from this wallet.",
     "noWallet": "Please install MetaMask to transfer tokens",
     "noGasInVoucher": "The voucher wallet has no gas. Please use the \"Import Private Key\" option instead.",
     "noTokens": "This voucher has already been redeemed"

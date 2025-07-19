@@ -29,7 +29,7 @@ export const VoucherWidget: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
   const [includeGas, setIncludeGas] = useState(true);
-  const [gasAmount] = useState('0.001'); // ~$2-3 worth of ETH/ARB
+  const [gasAmount] = useState('0.001'); // ~$2-3 worth of ETH
 
   const tokenConfig = getTokenConfig();
 
@@ -303,7 +303,7 @@ export const VoucherWidget: React.FC = () => {
                       'web3:voucher.includeGas',
                       'Include gas for easy redemption'
                     )}{' '}
-                    ({gasAmount} ETH/ARB)
+                    ({gasAmount} ETH)
                   </span>
                 </label>
                 <p className="gas-description">
