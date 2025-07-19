@@ -20,17 +20,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     <nav className={styles.bottomNav}>
       <div className={styles.navContainer}>
         <button
-          onClick={() => onWidgetChange('send')}
-          className={`${styles.navButton} ${activeWidget === 'send' ? `${styles.active} ${styles.send}` : ''}`}
-          aria-label={t('web3:transaction.send', { token: selectedToken })}
-        >
-          <div className={styles.activeIndicator} />
-          <div className={styles.iconWrapper}>
-            <i className={`fas fa-paper-plane ${styles.icon}`}></i>
-          </div>
-        </button>
-
-        <button
           onClick={() => onWidgetChange('trade')}
           className={`${styles.navButton} ${activeWidget === 'trade' ? `${styles.active} ${styles.trade}` : ''}`}
           aria-label={t('web3:trade.title', 'Trade')}
@@ -39,6 +28,21 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div className={styles.iconWrapper}>
             <i className={`fas fa-exchange-alt ${styles.icon}`}></i>
           </div>
+          <span className={styles.label}>{t('web3:trade.title', 'Trade')}</span>
+        </button>
+
+        <button
+          onClick={() => onWidgetChange('send')}
+          className={`${styles.navButton} ${activeWidget === 'send' ? `${styles.active} ${styles.send}` : ''}`}
+          aria-label={t('web3:transaction.send', { token: selectedToken })}
+        >
+          <div className={styles.activeIndicator} />
+          <div className={styles.iconWrapper}>
+            <i className={`fas fa-paper-plane ${styles.icon}`}></i>
+          </div>
+          <span className={styles.label}>
+            {t('web3:transaction.send', { token: selectedToken })}
+          </span>
         </button>
 
         <button
@@ -50,6 +54,9 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div className={styles.iconWrapper}>
             <i className={`fas fa-clock-rotate-left ${styles.icon}`}></i>
           </div>
+          <span className={styles.label}>
+            {t('web3:transaction.historyShort', 'History')}
+          </span>
         </button>
       </div>
     </nav>

@@ -15,7 +15,7 @@
   transition: all 0.2s ease;
   font-size: 16px;
   font-weight: 500;
-  min-width: 200px;
+  width: 100%;
 }
 
 .tokenSelectorButton:hover {

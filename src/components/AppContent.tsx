@@ -25,15 +25,20 @@ export const AppContent: React.FC = () => {
     'send' | 'history' | 'trade'
   >('send');
   const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
+  const [prefilledAmount, setPrefilledAmount] = useState<string>('');
 
-  const handleNavigateToSend = (address: string) => {
+  const handleNavigateToSend = (address: string, amount?: string) => {
     setPrefilledRecipient(address);
+    if (amount) {
+      setPrefilledAmount(amount);
+    }
     setActiveWidget('send');
   };
 
   const handleWidgetChange = (widget: 'send' | 'history' | 'trade') => {
     if (widget !== 'send') {
       setPrefilledRecipient('');
+      setPrefilledAmount('');
     }
     setActiveWidget(widget);
   };
@@ -44,7 +49,46 @@ export const AppContent: React.FC = () => {
         <div className="header-controls">
           <LanguageSwitcher />
         </div>
-        <h1>{t('common:welcome')}</h1>
+        <div
+          className="header-logo"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+            marginBottom: '32px',
+            marginTop: '60px',
+            paddingTop: '20px',
+          }}
+        >
+          <img
+            src="/lion_head_black_no_bg.png"
+            alt="NBGN Lion"
+            style={{
+              width: '80px',
+              height: '80px',
+              filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
+            }}
+          />
+          <h1
+            style={{
+              fontSize: '56px',
+              fontWeight: '900',
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+              letterSpacing: '-3px',
+              fontFamily:
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              textTransform: 'uppercase',
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            NBGN
+          </h1>
+        </div>
 
         <div className="info-nav">
           <div
@@ -67,7 +111,14 @@ export const AppContent: React.FC = () => {
         {!user.address ? (
           // Show wallet connect first if not connected
           <>
-            <div style={{ marginTop: '40px', marginBottom: '20px' }}>
+            <div
+              style={{
+                marginTop: '40px',
+                marginBottom: '20px',
+                width: '90vw',
+                maxWidth: '1200px',
+              }}
+            >
               <h2
                 style={{
                   fontSize: '24px',
@@ -83,30 +134,38 @@ export const AppContent: React.FC = () => {
         ) : (
           // Show token selector and other components after wallet is connected
           <>
-            <div
-              className="token-selector-container"
-              style={{ marginTop: '20px', marginBottom: '20px' }}
-            >
-              <TokenSelector />
+            <div style={{ width: '90vw', maxWidth: '1200px' }}>
+              <div
+                className="token-selector-container"
+                style={{ marginTop: '20px', marginBottom: '20px' }}
+              >
+                <TokenSelector />
+              </div>
+
+              <TokenInfoExplainer />
+
+              <MoneriumExplainer isVisible={selectedToken === 'NBGN'} />
+
+              <WalletConnect key={user.address || 'wallet-connected'} />
             </div>
-
-            <TokenInfoExplainer />
-
-            <MoneriumExplainer isVisible={selectedToken === 'NBGN'} />
-
-            <WalletConnect key={user.address || 'wallet-connected'} />
           </>
         )}
 
         {user.address && (
           <>
-            <div className="mt-8 w-full max-w-2xl">
+            <div
+              className="mt-8 w-full"
+              style={{ width: '90vw', maxWidth: '1200px' }}
+            >
               {/* Network Warning for selected token */}
               <NetworkWarning />
 
               {/* Widget Content */}
               {activeWidget === 'send' && (
-                <NBGNTransfer initialRecipient={prefilledRecipient} />
+                <NBGNTransfer
+                  initialRecipient={prefilledRecipient}
+                  initialAmount={prefilledAmount}
+                />
               )}
               {activeWidget === 'trade' && <TokenTrade />}
               {activeWidget === 'history' && (
@@ -135,6 +194,51 @@ export const AppContent: React.FC = () => {
               Виж пълния дисклеймър тук. 🔗
             </a>
           </p>
+
+          <div
+            className="sponsor-section"
+            style={{ marginTop: '16px', marginBottom: '16px' }}
+          >
+            <button
+              onClick={() =>
+                handleNavigateToSend(
+                  '0x9d47330F73336cEDb75695dD0391adA2c6be529d',
+                  '5'
+                )
+              }
+              className="sponsor-link"
+              style={{
+                background: 'linear-gradient(135deg, #ec4899, #f43f5e)',
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(236, 72, 153, 0.3)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 4px 16px rgba(236, 72, 153, 0.4)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 2px 8px rgba(236, 72, 153, 0.3)';
+              }}
+            >
+              <span>
+                {t('common:sponsorProject', 'Sponsor the NBGN project')}
+              </span>
+              <span style={{ fontSize: '18px' }}>❤️</span>
+            </button>
+          </div>
 
           <div className="footer-links">
             <a

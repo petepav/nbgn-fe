@@ -8,10 +8,12 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 
 interface NBGNTransferProps {
   initialRecipient?: string;
+  initialAmount?: string;
 }
 
 export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
   initialRecipient = '',
+  initialAmount = '',
 }) => {
   const { t } = useTranslation();
   const { formattedBalance, rawBalance, transfer } = useToken();
@@ -19,7 +21,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
   const { executeTransaction, status, hash, error } = useTransaction();
 
   const [recipient, setRecipient] = useState(initialRecipient);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(initialAmount);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
@@ -27,6 +29,10 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
   useEffect(() => {
     setRecipient(initialRecipient);
   }, [initialRecipient]);
+
+  useEffect(() => {
+    setAmount(initialAmount);
+  }, [initialAmount]);
 
   // QR Scanner effect
   useEffect(() => {
@@ -129,8 +135,14 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
         {t('web3:transaction.send', { token: selectedToken })}
       </h3>
 
-      <div className="balance-info mb-4 p-4 bg-gray-50 rounded-lg">
-        <p className="text-sm text-gray-600">
+      <div
+        className="balance-info mb-4 p-4 rounded-lg"
+        style={{
+          background: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)',
+          color: 'white',
+        }}
+      >
+        <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
           {t('common:balance', 'Available Balance')}
         </p>
         <p className="text-2xl font-bold">{formattedBalance}</p>
@@ -141,33 +153,36 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('web3:recipient', 'Recipient Address')}
           </label>
-          <div className="relative">
+          <div style={{ marginBottom: '32px' }}>
             <input
               type="text"
               value={recipient}
               onChange={e => setRecipient(e.target.value)}
               placeholder="0x..."
-              className="w-full px-3 py-2 pr-48 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+            <div
+              className="flex gap-2 justify-end"
+              style={{ marginTop: '12px' }}
+            >
               <button
                 type="button"
                 onClick={() => setShowScanner(true)}
-                className="px-3 py-1 text-sm bg-blue-50 border border-blue-200 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                className="qr-scan-button"
                 title="Scan QR Code"
               >
-                <i className="fas fa-qrcode mr-1"></i>
+                <i className="fas fa-qrcode"></i>
                 Сканирай QR код
               </button>
               {recipient && (
                 <button
                   type="button"
                   onClick={() => setRecipient('')}
-                  className="px-3 py-1 text-sm bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                  className="clear-button"
                   title="Clear"
                 >
-                  <i className="fas fa-times mr-1"></i>
+                  <i className="fas fa-times"></i>
                   Изчисти
                 </button>
               )}
@@ -176,10 +191,13 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            className="block text-sm font-medium text-gray-700 mb-2"
+            style={{ marginTop: '16px' }}
+          >
             {t('web3:amount', 'Amount')}
           </label>
-          <div className="relative">
+          <div className="input-with-max">
             <input
               type="number"
               value={amount}
@@ -191,17 +209,16 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
-            <button
-              type="button"
-              onClick={maxAmount}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-green-600 hover:text-green-800"
-            >
+            <button type="button" onClick={maxAmount} className="max-button">
               MAX
             </button>
           </div>
 
           {/* Amount Adjustment Buttons */}
-          <div className="mt-2 flex flex-wrap gap-2 justify-center">
+          <div
+            className="mt-3 flex flex-wrap justify-center"
+            style={{ margin: '16px -4px' }}
+          >
             <div className="flex gap-1">
               <button
                 type="button"
@@ -209,7 +226,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(-5);
                 }}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 5 ${selectedToken}`}
               >
                 -5
@@ -220,7 +237,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(-1);
                 }}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 1 ${selectedToken}`}
               >
                 -1
@@ -231,7 +248,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(-0.5);
                 }}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 0.5 ${selectedToken}`}
               >
                 -0.5
@@ -242,7 +259,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(-0.05);
                 }}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 0.05 ${selectedToken}`}
               >
                 -0.05
@@ -255,7 +272,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(0.05);
                 }}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 0.05 ${selectedToken}`}
               >
                 +0.05
@@ -266,7 +283,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(0.5);
                 }}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 0.5 ${selectedToken}`}
               >
                 +0.5
@@ -277,7 +294,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(1);
                 }}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 1 ${selectedToken}`}
               >
                 +1
@@ -288,7 +305,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   e.preventDefault();
                   adjustAmount(5);
                 }}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 5 ${selectedToken}`}
               >
                 +5
@@ -302,11 +319,19 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
           disabled={
             isSubmitting || status === 'pending' || !recipient || !amount
           }
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="send-button"
         >
-          {isSubmitting || status === 'pending'
-            ? t('web3:transaction.pending')
-            : t('web3:transaction.send', { token: selectedToken })}
+          {isSubmitting || status === 'pending' ? (
+            <>
+              <i className="fas fa-spinner fa-spin"></i>
+              {t('web3:transaction.pending')}
+            </>
+          ) : (
+            <>
+              <i className="fas fa-paper-plane"></i>
+              {t('web3:transaction.send', { token: selectedToken })}
+            </>
+          )}
         </button>
       </form>
 
