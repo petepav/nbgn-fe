@@ -126,7 +126,7 @@ export const VoucherRedeem: React.FC = () => {
       );
       const gasBalance = await provider.getBalance(voucherWallet.address);
 
-      if (gasBalance === 0n) {
+      if (gasBalance.toString() === '0') {
         // No gas in voucher wallet - we'll need the user to send the transaction
 
         // Can't use transferFrom without approval from voucher wallet
@@ -149,7 +149,7 @@ export const VoucherRedeem: React.FC = () => {
       // Get token balance
       const balance = await tokenContract.balanceOf(voucherWallet.address);
 
-      if (balance === 0n) {
+      if (balance.toString() === '0') {
         throw new Error(
           t('web3:voucher.noTokens', 'This voucher has already been redeemed')
         );
