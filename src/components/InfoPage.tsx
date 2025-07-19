@@ -88,7 +88,7 @@ export const InfoPage: React.FC = () => {
                   <li>
                     <strong>Адрес:</strong>{' '}
                     <code style={{ fontSize: '12px' }}>
-                      0x144bc6785d4bBC450a736f0e0AC6d2B551a1eDB6
+                      0x4922fafB060C89E0B1A22339f3e52dA4f6e0f980
                     </code>
                   </li>
                 </ul>

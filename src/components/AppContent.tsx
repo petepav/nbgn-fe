@@ -23,7 +23,7 @@ export const AppContent: React.FC = () => {
   // const { chainId, switchToArbitrum } = useWeb3();
   const [activeWidget, setActiveWidget] = useState<
     'send' | 'history' | 'trade'
-  >('send');
+  >('trade');
   const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
   const [prefilledAmount, setPrefilledAmount] = useState<string>('');
   const [addressCopied, setAddressCopied] = useState(false);

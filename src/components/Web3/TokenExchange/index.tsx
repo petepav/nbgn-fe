@@ -91,6 +91,12 @@ export const TokenExchange: React.FC = () => {
           user.address,
           tokenConfig.address
         );
+        console.log('Current allowance:', {
+          raw: currentAllowance.toString(),
+          formatted: ethers.formatUnits(currentAllowance, decimals),
+          userAddress: user.address,
+          spenderAddress: tokenConfig.address,
+        });
         setAllowance(ethers.formatUnits(currentAllowance, decimals));
       } catch (error) {
         console.error('Failed to fetch stable token data:', error);
@@ -123,9 +129,17 @@ export const TokenExchange: React.FC = () => {
 
   const needsApproval = () => {
     if (!stableAmount) return false;
-    return parseFloat(stableAmount) > parseFloat(allowance);
+    const needs = parseFloat(stableAmount) > parseFloat(allowance);
+    console.log('Needs approval check:', {
+      stableAmount,
+      allowance,
+      needsApproval: needs,
+    });
+    return needs;
   };
 
+  // Keeping for potential future use
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const handleApprove = async () => {
     if (!stableAmount) return;
 
@@ -159,39 +173,185 @@ export const TokenExchange: React.FC = () => {
   };
 
   const handleMint = async () => {
-    if (!stableAmount || needsApproval()) return;
+    if (!stableAmount) return;
 
     setIsMinting(true);
 
     try {
+      // Skip USDC verification since we know the new contract uses the correct USDC
+
+      // Check if approval is needed and approve first
+      if (needsApproval()) {
+        setIsApproving(true);
+        try {
+          await executeTransaction(async () => {
+            const stableContract = await getStableTokenContract();
+            if (!stableContract)
+              throw new Error('Failed to get stable token contract');
+
+            const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
+            const amountWei = ethers.parseUnits(stableAmount, decimals);
+
+            return await stableContract.approve(tokenConfig.address, amountWei);
+          });
+
+          // Wait a bit for the approval to be confirmed
+          await new Promise(resolve => window.setTimeout(resolve, 2000));
+
+          // Refresh allowance after approval
+          const stableContract = await getStableTokenContract();
+          if (stableContract) {
+            const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
+            const newAllowance = await stableContract.allowance(
+              user.address,
+              tokenConfig.address
+            );
+            console.log('New allowance after approval:', {
+              raw: newAllowance.toString(),
+              formatted: ethers.formatUnits(newAllowance, decimals),
+            });
+            setAllowance(ethers.formatUnits(newAllowance, decimals));
+
+            // Double-check the approval worked
+            if (
+              parseFloat(ethers.formatUnits(newAllowance, decimals)) <
+              parseFloat(stableAmount)
+            ) {
+              throw new Error('Approval failed - allowance still too low');
+            }
+          }
+        } finally {
+          setIsApproving(false);
+        }
+      }
+
+      // Now proceed with minting
       await executeTransaction(async () => {
         const tokenContract = await getContract();
         if (!tokenContract) throw new Error('Failed to get token contract');
 
         const decimals = tokenConfig.stableTokenSymbol === 'USDC' ? 6 : 18;
 
-        // For USDC, reduce amount by 0.1% to avoid any precision issues
-        let adjustedAmount = stableAmount;
-        if (tokenConfig.stableTokenSymbol === 'USDC') {
-          const numAmount = parseFloat(stableAmount);
-          // Reduce by 0.1% and round down to 6 decimals
-          const reduced = numAmount * 0.999;
-          adjustedAmount = Math.floor(reduced * 1000000) / 1000000 + '';
-        }
+        // Use the exact amount the user entered
+        const adjustedAmount = stableAmount;
+        console.log('Using amount:', adjustedAmount);
+
+        // Get stable contract and check balance
+        const stableContract = await getStableTokenContract();
+        if (!stableContract)
+          throw new Error('Failed to get stable token contract');
+
+        const actualBalance = await stableContract.balanceOf(user.address);
+        const amountWei = ethers.parseUnits(adjustedAmount, decimals);
+
+        console.log('USDC balance right before mint:', {
+          raw: actualBalance.toString(),
+          formatted: ethers.formatUnits(actualBalance, decimals),
+          userAddress: user.address,
+        });
 
         // Log the exact values for debugging
         console.log('Minting with values:', {
           originalAmount: stableAmount,
           adjustedAmount,
           stableBalance,
+          actualBalance: actualBalance.toString(),
+          amountWei: amountWei.toString(),
           decimals,
           stableTokenSymbol: tokenConfig.stableTokenSymbol,
+          userAddress: user.address,
+          tokenContractAddress: tokenConfig.address,
         });
 
-        const amountWei = ethers.parseUnits(adjustedAmount, decimals);
-        console.log('Amount in wei:', amountWei.toString());
+        // Final safety check
+        if (amountWei > actualBalance) {
+          throw new Error(
+            `Insufficient balance: trying to send ${amountWei.toString()} but have ${actualBalance.toString()}`
+          );
+        }
 
-        return await tokenContract.mint(amountWei);
+        // Check current allowance right before minting
+        const currentAllowance = await stableContract.allowance(
+          user.address,
+          tokenConfig.address
+        );
+        console.log('Allowance right before mint:', {
+          currentAllowance: currentAllowance.toString(),
+          requiredAmount: amountWei.toString(),
+          hasEnoughAllowance: currentAllowance >= amountWei,
+        });
+
+        if (currentAllowance < amountWei) {
+          throw new Error(
+            `Insufficient allowance: have ${currentAllowance.toString()} but need ${amountWei.toString()}`
+          );
+        }
+
+        // One final check - get the EXACT current state
+        const finalBalance = await stableContract.balanceOf(user.address);
+        const finalAllowance = await stableContract.allowance(
+          user.address,
+          tokenConfig.address
+        );
+
+        console.log('Final state before mint:', {
+          balance: finalBalance.toString(),
+          allowance: finalAllowance.toString(),
+          amountToSend: amountWei.toString(),
+          hasEnoughBalance: finalBalance >= amountWei,
+          hasEnoughAllowance: finalAllowance >= amountWei,
+        });
+
+        console.log('About to call mint with:', {
+          amountWei: amountWei.toString(),
+          contractAddress: tokenConfig.address,
+          method: 'mint',
+        });
+
+        try {
+          // First try to estimate gas to see if it would fail
+          console.log('Estimating gas for mint transaction...');
+          try {
+            const gasEstimate = await tokenContract.mint.estimateGas(amountWei);
+            console.log('Gas estimate successful:', gasEstimate.toString());
+          } catch (gasError) {
+            console.error('Gas estimation failed:', gasError);
+
+            // Try a static call to get more info
+            try {
+              await tokenContract.mint.staticCall(amountWei);
+              console.log('Static call succeeded - this is odd');
+            } catch (staticError) {
+              console.error('Static call also failed:', staticError);
+            }
+
+            // Check if USDC contract has any issues
+            const usdcBalance = await stableContract.balanceOf(user.address);
+            const dbgnBalance = await stableContract.balanceOf(
+              tokenConfig.address
+            );
+            console.log('USDC balances:', {
+              user: usdcBalance.toString(),
+              dbgnContract: dbgnBalance.toString(),
+            });
+
+            throw gasError;
+          }
+
+          return await tokenContract.mint(amountWei);
+        } catch (error) {
+          console.error('Mint failed with error:', error);
+          if (error.message?.includes('transfer amount exceeds balance')) {
+            // This error is from the DBGN contract trying to transferFrom USDC
+            console.error(
+              'The DBGN contract failed to transfer USDC. This might be because:'
+            );
+            console.error('1. Your USDC balance changed');
+            console.error('2. There is a gas cost not accounted for');
+            console.error('3. The contract has a bug');
+          }
+          throw error;
+        }
       });
 
       // Clear form and refresh balances on success
@@ -218,9 +378,9 @@ export const TokenExchange: React.FC = () => {
       return;
     }
 
-    // Apply a safety buffer of 0.01 USDC to account for any precision issues
+    // Apply a safety buffer of 0.02 USDC to account for gas and precision issues
     // Then round down to 2 decimals for simplicity
-    const safeBalance = Math.floor((balance - 0.01) * 100) / 100;
+    const safeBalance = Math.floor((balance - 0.02) * 100) / 100;
 
     // Format to 2 decimal places
     const formatted = Math.max(0, safeBalance).toFixed(2);
@@ -233,7 +393,7 @@ export const TokenExchange: React.FC = () => {
     const newAmount = Math.max(0, currentAmount + delta);
     const maxBalance = parseFloat(stableBalance) || 0;
 
-    if (newAmount <= maxBalance - 0.01) {
+    if (newAmount <= maxBalance - 0.02) {
       // Round to 2 decimals for consistency
       const formatted = newAmount.toFixed(2);
       setStableAmount(formatted);
@@ -290,7 +450,7 @@ export const TokenExchange: React.FC = () => {
                 if (!isNaN(value) && value > 0) {
                   // Round to 2 decimals and ensure not exceeding balance with buffer
                   const maxBalance = parseFloat(stableBalance) || 0;
-                  const safeMax = Math.floor((maxBalance - 0.01) * 100) / 100;
+                  const safeMax = Math.floor((maxBalance - 0.02) * 100) / 100;
                   const rounded = Math.min(
                     Math.floor(value * 100) / 100,
                     safeMax
@@ -421,54 +581,36 @@ export const TokenExchange: React.FC = () => {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         <div style={{ marginTop: '32px' }}>
-          {needsApproval() ? (
-            <button
-              className="btn btn-primary w-full"
-              onClick={handleApprove}
-              disabled={
-                !stableAmount || parseFloat(stableAmount) <= 0 || isApproving
-              }
-            >
-              {isApproving ? (
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-spinner fa-spin mr-2"></i>
-                  {t('web3:exchange.approving')}
-                </span>
-              ) : (
-                <span>
-                  <i className="fas fa-check mr-2"></i>
-                  {t('web3:exchange.approve', {
-                    token: tokenConfig.stableTokenSymbol,
-                  })}
-                </span>
-              )}
-            </button>
-          ) : (
-            <button
-              className="btn btn-primary w-full"
-              onClick={handleMint}
-              disabled={
-                !stableAmount ||
-                parseFloat(stableAmount) <= 0 ||
-                parseFloat(stableAmount) > parseFloat(stableBalance) ||
-                isMinting
-              }
-            >
-              {isMinting ? (
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-spinner fa-spin mr-2"></i>
-                  {t('web3:exchange.minting')}
-                </span>
-              ) : (
-                <span>
-                  <i className="fas fa-coins mr-2"></i>
-                  {t('web3:exchange.mint', { token: tokenConfig.symbol })}
-                </span>
-              )}
-            </button>
-          )}
+          <button
+            className="btn btn-primary w-full"
+            onClick={handleMint}
+            disabled={
+              !stableAmount ||
+              parseFloat(stableAmount) <= 0 ||
+              parseFloat(stableAmount) > parseFloat(stableBalance) ||
+              isMinting ||
+              isApproving
+            }
+          >
+            {isApproving ? (
+              <span className="flex items-center justify-center">
+                <i className="fas fa-spinner fa-spin mr-2"></i>
+                {t('web3:exchange.approving')}
+              </span>
+            ) : isMinting ? (
+              <span className="flex items-center justify-center">
+                <i className="fas fa-spinner fa-spin mr-2"></i>
+                {t('web3:exchange.minting')}
+              </span>
+            ) : (
+              <span>
+                <i className="fas fa-coins mr-2"></i>
+                {t('web3:exchange.mint', { token: tokenConfig.symbol })}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Transaction Status */}

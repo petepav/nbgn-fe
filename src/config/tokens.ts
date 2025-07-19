@@ -33,7 +33,7 @@ export const SUPPORTED_TOKENS: Record<string, TokenConfig> = {
     chainName: 'Arbitrum One',
   },
   DBGN: {
-    address: '0x144bc6785d4bBC450a736f0e0AC6d2B551a1eDB6',
+    address: '0x4922fafB060C89E0B1A22339f3e52dA4f6e0f980',
     symbol: 'DBGN',
     name: 'DBGN Token',
     decimals: 18,
