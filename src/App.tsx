@@ -8,6 +8,7 @@ import { DisclaimerPage } from './components/DisclaimerPage';
 import { InfoPage } from './components/InfoPage';
 import { SimpleDebugConsole } from './components/SimpleDebugConsole';
 import { TermsOfUse } from './components/TermsOfUse';
+import { VoucherRedeem } from './components/Web3/VoucherRedeem';
 import { useTermsAcceptance } from './hooks/useTermsAcceptance';
 import './App.css';
 
@@ -38,6 +39,7 @@ function AppWithTerms() {
         <Route path="/disclaimer" element={<DisclaimerPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/debug" element={<SimpleDebugConsole />} />
+        <Route path="/voucher/:voucherData" element={<VoucherRedeem />} />
       </Routes>
     </Router>
   );

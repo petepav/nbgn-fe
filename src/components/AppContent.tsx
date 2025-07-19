@@ -5,6 +5,7 @@ import { WalletConnect } from './Web3/WalletConnect';
 import { NBGNTransfer } from './Web3/NBGNTransfer';
 import { TokenTrade } from './Web3/TokenTrade';
 import { TransactionHistory } from './Web3/TransactionHistory';
+import { VoucherWidget } from './Web3/VoucherWidget';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
 import { MobileWarning } from './MobileWarning';
@@ -22,7 +23,7 @@ export const AppContent: React.FC = () => {
   const { selectedToken } = useTokenContext();
   // const { chainId, switchToArbitrum } = useWeb3();
   const [activeWidget, setActiveWidget] = useState<
-    'send' | 'history' | 'trade'
+    'send' | 'history' | 'trade' | 'voucher'
   >('trade');
   const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
   const [prefilledAmount, setPrefilledAmount] = useState<string>('');
@@ -36,7 +37,9 @@ export const AppContent: React.FC = () => {
     setActiveWidget('send');
   };
 
-  const handleWidgetChange = (widget: 'send' | 'history' | 'trade') => {
+  const handleWidgetChange = (
+    widget: 'send' | 'history' | 'trade' | 'voucher'
+  ) => {
     if (widget !== 'send') {
       setPrefilledRecipient('');
       setPrefilledAmount('');
@@ -172,6 +175,7 @@ export const AppContent: React.FC = () => {
               {activeWidget === 'history' && (
                 <TransactionHistory onNavigateToSend={handleNavigateToSend} />
               )}
+              {activeWidget === 'voucher' && <VoucherWidget />}
 
               {/* Bottom Navigation - Positioned after widgets */}
               <BottomNavigation

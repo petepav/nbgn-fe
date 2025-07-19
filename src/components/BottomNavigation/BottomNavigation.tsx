@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import styles from './BottomNavigation.module.css';
 
 interface BottomNavigationProps {
-  activeWidget: 'send' | 'trade' | 'history';
+  activeWidget: 'send' | 'trade' | 'history' | 'voucher';
   // eslint-disable-next-line no-unused-vars
-  onWidgetChange: (widget: 'send' | 'trade' | 'history') => void;
+  onWidgetChange: (widget: 'send' | 'trade' | 'history' | 'voucher') => void;
   selectedToken: string;
 }
 
@@ -56,6 +56,20 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </div>
           <span className={styles.label}>
             {t('web3:transaction.historyShort', 'History')}
+          </span>
+        </button>
+
+        <button
+          onClick={() => onWidgetChange('voucher')}
+          className={`${styles.navButton} ${activeWidget === 'voucher' ? `${styles.active} ${styles.voucher}` : ''}`}
+          aria-label={t('web3:voucher.title', 'Voucher')}
+        >
+          <div className={styles.activeIndicator} />
+          <div className={styles.iconWrapper}>
+            <i className={`fas fa-gift ${styles.icon}`}></i>
+          </div>
+          <span className={styles.label}>
+            {t('web3:voucher.title', 'Voucher')}
           </span>
         </button>
       </div>
