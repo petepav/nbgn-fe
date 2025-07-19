@@ -565,19 +565,19 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--bg-green) 0%, var(--bg-green-light) 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
   color: var(--text-white);
   border: none;
   padding: 14px 24px;
   border-radius: 12px;
   font-weight: 600;
-  box-shadow: 0 4px 16px var(--shadow-green);
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--bg-green-dark) 0%, var(--bg-green) 100%);
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--shadow-green);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
 }
 
 .btn-primary:disabled {
@@ -602,19 +602,19 @@ button {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--bg-red) 0%, var(--bg-red-light) 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
   color: var(--text-white);
   border: none;
   padding: 14px 24px;
   border-radius: 12px;
   font-weight: 600;
-  box-shadow: 0 4px 16px var(--shadow-red);
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.3);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--bg-red-dark) 0%, var(--bg-red) 100%);
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--shadow-red);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
 }
 
 /* Transaction History */

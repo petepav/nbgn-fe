@@ -26,6 +26,7 @@ export const AppContent: React.FC = () => {
   >('send');
   const [prefilledRecipient, setPrefilledRecipient] = useState<string>('');
   const [prefilledAmount, setPrefilledAmount] = useState<string>('');
+  const [addressCopied, setAddressCopied] = useState(false);
 
   const handleNavigateToSend = (address: string, amount?: string) => {
     setPrefilledRecipient(address);
@@ -188,7 +189,7 @@ export const AppContent: React.FC = () => {
       <footer className="disclaimer-footer">
         <div className="disclaimer-content">
           <p className="disclaimer-short">
-            ⚠️ nbgn е частен токен, няма връзка с БНБ или официалната валута.
+            ⚠️ NBGN е частен токен, няма връзка с БНБ или официалната валута.
             Участието е изцяло на собствен риск.
             <a href="/disclaimer" className="disclaimer-link">
               Виж пълния дисклеймър тук. 🔗
@@ -202,13 +203,13 @@ export const AppContent: React.FC = () => {
             <button
               onClick={() =>
                 handleNavigateToSend(
-                  '0x9d47330F73336cEDb75695dD0391adA2c6be529d',
+                  '0x2844ee586336982fd6F20345f8eA0236608bc3E8',
                   '5'
                 )
               }
               className="sponsor-link"
               style={{
-                background: 'linear-gradient(135deg, #ec4899, #f43f5e)',
+                background: 'linear-gradient(135deg, #a0826d, #8b6f47)',
                 color: 'white',
                 padding: '10px 20px',
                 borderRadius: '8px',
@@ -220,24 +221,93 @@ export const AppContent: React.FC = () => {
                 alignItems: 'center',
                 gap: '8px',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 2px 8px rgba(236, 72, 153, 0.3)',
+                boxShadow: '0 2px 8px rgba(139, 111, 71, 0.3)',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow =
-                  '0 4px 16px rgba(236, 72, 153, 0.4)';
+                  '0 4px 16px rgba(139, 111, 71, 0.4)';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow =
-                  '0 2px 8px rgba(236, 72, 153, 0.3)';
+                  '0 2px 8px rgba(139, 111, 71, 0.3)';
               }}
             >
               <span>
                 {t('common:sponsorProject', 'Sponsor the NBGN project')}
               </span>
-              <span style={{ fontSize: '18px' }}>❤️</span>
+              <span style={{ fontSize: '18px' }}>☕</span>
             </button>
+            <div
+              style={{
+                marginTop: '12px',
+                textAlign: 'center',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#64748b',
+                  marginBottom: '8px',
+                }}
+              >
+                {t(
+                  'common:acceptedDonations',
+                  'We accept NBGN, EURe, DBGN, GBGN, USDC, ETH, WBTC but all donations are welcome'
+                )}
+              </p>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#f8f9fa',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontFamily: 'monospace',
+                }}
+              >
+                <span style={{ color: '#475569' }}>
+                  0x2844ee586336982fd6F20345f8eA0236608bc3E8
+                </span>
+                <button
+                  onClick={() => {
+                    void window.navigator.clipboard.writeText(
+                      '0x2844ee586336982fd6F20345f8eA0236608bc3E8'
+                    );
+                    setAddressCopied(true);
+                    window.setTimeout(() => setAddressCopied(false), 2000);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: addressCopied ? '#10b981' : '#ec4899',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => {
+                    if (!addressCopied) {
+                      e.currentTarget.style.color = '#f43f5e';
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!addressCopied) {
+                      e.currentTarget.style.color = '#ec4899';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }
+                  }}
+                  title={t('common:copyAddress', 'Copy address')}
+                >
+                  <i
+                    className={addressCopied ? 'fas fa-check' : 'fas fa-copy'}
+                  ></i>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="footer-links">

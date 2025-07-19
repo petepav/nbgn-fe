@@ -27,7 +27,7 @@ export const TokenExchange: React.FC = () => {
   const [isMinting, setIsMinting] = useState(false);
 
   // Get the appropriate stable token ABI
-  const getStableTokenABI = () => {
+  const getStableTokenABI = useCallback(() => {
     if (tokenConfig.stableTokenSymbol === 'EURe') return EURE_ABI;
     if (
       tokenConfig.stableTokenSymbol === 'EURC' ||
@@ -35,7 +35,7 @@ export const TokenExchange: React.FC = () => {
     )
       return EURC_ABI;
     return EURE_ABI; // default
-  };
+  }, [tokenConfig.stableTokenSymbol]);
 
   // Format stable token with appropriate decimals
   const formatStableToken = (value: string) => {
@@ -316,21 +316,15 @@ export const TokenExchange: React.FC = () => {
 
           {/* Amount Adjustment Buttons */}
           <div
-            style={{
-              marginTop: '8px',
-              marginBottom: '24px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-              justifyContent: 'center',
-            }}
+            className="mt-3 flex flex-wrap justify-center"
+            style={{ margin: '16px -4px' }}
           >
             <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => adjustAmount(-5)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-subtract"
                 title={`Subtract 5 ${tokenConfig.stableTokenSymbol}`}
               >
                 -5
@@ -339,7 +333,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(-1)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-subtract"
                 title={`Subtract 1 ${tokenConfig.stableTokenSymbol}`}
               >
                 -1
@@ -348,7 +342,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(-0.5)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-subtract"
                 title={`Subtract 0.5 ${tokenConfig.stableTokenSymbol}`}
               >
                 -0.5
@@ -357,7 +351,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(-0.05)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-subtract"
                 title={`Subtract 0.05 ${tokenConfig.stableTokenSymbol}`}
               >
                 -0.05
@@ -368,7 +362,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(0.05)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-add"
                 title={`Add 0.05 ${tokenConfig.stableTokenSymbol}`}
               >
                 +0.05
@@ -377,7 +371,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(0.5)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-add"
                 title={`Add 0.5 ${tokenConfig.stableTokenSymbol}`}
               >
                 +0.5
@@ -386,7 +380,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(1)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-add"
                 title={`Add 1 ${tokenConfig.stableTokenSymbol}`}
               >
                 +1
@@ -395,7 +389,7 @@ export const TokenExchange: React.FC = () => {
                 type="button"
                 onClick={() => adjustAmount(5)}
                 disabled={loading || isApproving || isMinting}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="preset-button-add"
                 title={`Add 5 ${tokenConfig.stableTokenSymbol}`}
               >
                 +5

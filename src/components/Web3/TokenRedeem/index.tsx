@@ -162,7 +162,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(-1)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 1 ${tokenConfig.symbol}`}
               >
                 -1
@@ -170,7 +170,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(-0.5)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 0.5 ${tokenConfig.symbol}`}
               >
                 -0.5
@@ -178,7 +178,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(-0.05)}
-                className="px-2 py-1 text-xs bg-red-50 border border-red-200 text-red-600 rounded hover:bg-red-100 transition-colors"
+                className="preset-button-subtract"
                 title={`Subtract 0.05 ${tokenConfig.symbol}`}
               >
                 -0.05
@@ -188,7 +188,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(0.05)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 0.05 ${tokenConfig.symbol}`}
               >
                 +0.05
@@ -196,7 +196,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(0.5)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 0.5 ${tokenConfig.symbol}`}
               >
                 +0.5
@@ -204,7 +204,7 @@ export const TokenRedeem: React.FC = () => {
               <button
                 type="button"
                 onClick={() => adjustAmount(1)}
-                className="px-2 py-1 text-xs bg-green-50 border border-green-200 text-green-600 rounded hover:bg-green-100 transition-colors"
+                className="preset-button-add"
                 title={`Add 1 ${tokenConfig.symbol}`}
               >
                 +1

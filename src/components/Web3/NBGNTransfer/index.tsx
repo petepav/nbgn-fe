@@ -163,7 +163,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               required
             />
             <div
-              className="flex gap-2 justify-end"
+              className="flex gap-4 justify-end"
               style={{ marginTop: '12px' }}
             >
               <button
@@ -180,6 +180,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
                   type="button"
                   onClick={() => setRecipient('')}
                   className="clear-button"
+                  style={{ marginLeft: '12px' }}
                   title="Clear"
                 >
                   <i className="fas fa-times"></i>
