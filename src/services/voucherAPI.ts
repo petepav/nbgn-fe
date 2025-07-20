@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 // Always use the full URL - backend should handle CORS
-// Note: HTTP won't work from HTTPS production sites (Mixed Content)
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://207.154.215.37';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://rip-launch-configured-dom.trycloudflare.com';
 
 export interface CreateVoucherLinkRequest {
   voucher_id: string;
