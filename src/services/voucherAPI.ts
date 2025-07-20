@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Always use the full URL - backend should handle CORS
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://207.154.215.37:8080';
+// Note: HTTP won't work from HTTPS production sites (Mixed Content)
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://207.154.215.37';
 
 export interface CreateVoucherLinkRequest {
   voucher_id: string;
