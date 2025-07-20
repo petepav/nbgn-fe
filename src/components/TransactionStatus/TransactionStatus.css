@@ -1,0 +1,99 @@
+.transaction-status {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 300px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.status-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.status-icon {
+  font-size: 24px;
+  margin-top: 2px;
+}
+
+.transaction-status.pending .status-icon {
+  color: #ff9800;
+}
+
+.transaction-status.success .status-icon {
+  color: #4caf50;
+}
+
+.transaction-status.failed .status-icon {
+  color: #f44336;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-text {
+  font-weight: 500;
+  margin: 0 0 4px 0;
+  color: #333;
+}
+
+.confirmations {
+  font-size: 14px;
+  color: #666;
+  margin: 4px 0;
+}
+
+.tx-link {
+  font-size: 14px;
+  color: #e94560;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.tx-link:hover {
+  text-decoration: underline;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+@media (max-width: 640px) {
+  .transaction-status {
+    left: 20px;
+    right: 20px;
+    min-width: auto;
+  }
+}

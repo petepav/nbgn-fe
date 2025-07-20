@@ -13,7 +13,7 @@ i18n
     debug: process.env.NODE_ENV === 'development',
     
     defaultNS: 'common',
-    ns: ['common', 'web3'],
+    ns: ['common', 'web3', 'voucher'],
     
     interpolation: {
       escapeValue: false,
@@ -28,7 +28,7 @@ i18n
       caches: ['localStorage'],
     },
     
-    supportedLngs: ['en', 'bg', 'es'],
+    supportedLngs: ['en', 'bg'],
   });
 
 export default i18n;

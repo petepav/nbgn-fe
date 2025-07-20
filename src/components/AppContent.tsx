@@ -5,7 +5,7 @@ import { WalletConnect } from './Web3/WalletConnect';
 import { NBGNTransfer } from './Web3/NBGNTransfer';
 import { TokenTrade } from './Web3/TokenTrade';
 import { TransactionHistory } from './Web3/TransactionHistory';
-import { VoucherWidget } from './Web3/VoucherWidget';
+import { VoucherWidget } from './Voucher/VoucherWidget';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { VersionInfo } from './VersionInfo';
 import { MobileWarning } from './MobileWarning';

@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 const supportedLanguages = {
   en: 'English',
-  bg: 'Български',
-  es: 'Español'
+  bg: 'Български'
 };
 
 export const LanguageSwitcher: React.FC = () => {

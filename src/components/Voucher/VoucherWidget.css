@@ -1,0 +1,27 @@
+.voucher-widget {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.widget-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.widget-header h2 {
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.widget-header h2 i {
+  color: #e94560;
+}
+
+.widget-description {
+  color: #666;
+  font-size: 16px;
+}

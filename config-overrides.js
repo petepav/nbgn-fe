@@ -12,13 +12,22 @@ module.exports = function override(config, env) {
     stream: require.resolve('stream-browserify'),
     util: require.resolve('util'),
     path: require.resolve('path-browserify'),
+    process: require.resolve('process/browser'),
   };
   config.plugins.push(
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      process: 'process/browser.js',
       Buffer: ['buffer', 'Buffer'],
     }),
   );
+  
+  // Handle .mjs files properly
+  config.module.rules.push({
+    test: /\.m?js/,
+    resolve: {
+      fullySpecified: false
+    }
+  });
 
   return config;
 };

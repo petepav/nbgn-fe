@@ -4,12 +4,20 @@
     "connecting": "Connecting...",
     "connected": "Wallet Connected",
     "disconnect": "Disconnect",
-    "error": "Failed to connect wallet"
+    "error": "Failed to connect wallet",
+    "connectTitle": "Connect Your Wallet",
+    "connectDescription": "Connect your wallet to start using NBGN vouchers",
+    "connectWallet": "Connect Wallet",
+    "wrongNetwork": "Please switch to Arbitrum One",
+    "networkInfo": "This app works on Arbitrum One network"
   },
   "transaction": {
     "pending": "Transaction pending...",
     "confirmed": "Transaction confirmed",
     "failed": "Transaction failed",
+    "success": "Transaction successful!",
+    "confirmations": "{{count}} confirmations",
+    "viewOnExplorer": "View on Arbiscan",
     "gasEstimate": "Estimated gas: {{amount}} ETH",
     "history": "Transaction History",
     "send": "Send {{token}}",
@@ -61,7 +69,8 @@
     "title": "Trade"
   },
   "voucher": {
-    "title": "Voucher",
+    "title": "NBGN Vouchers",
+    "description": "Send NBGN to anyone, even without a wallet!",
     "betaTitle": "Beta Feature",
     "betaWarning": "This feature is still in beta. Please only use small amounts for testing.",
     "create": "Create Voucher",

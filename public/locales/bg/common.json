@@ -11,6 +11,11 @@
   "delete": "Изтрий",
   "adding": "Добавяне...",
   "connectFirst": "Свържете портфейла си, за да започнете",
+  "copy": "Копирай",
+  "copied": "Копирано!",
+  "share": "Сподели",
+  "or": "ИЛИ",
+  "goHome": "Начало",
   "sponsorProject": "Почерпи ни едно кафе",
   "acceptedDonations": "Приемаме дарения в NBGN, EURe, DBGN, GBGN, USDC, ETH, WBTC, но всички други токъни също са добре дошли :)",
   "monerium": {

@@ -1,0 +1,206 @@
+.voucher-create {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.voucher-create h3 {
+  margin-bottom: 20px;
+  color: #1a1a2e;
+}
+
+.connect-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.password-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.password-section h4 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.helper-text {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.voucher-create-success {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.success-header {
+  margin-bottom: 24px;
+}
+
+.success-header i {
+  font-size: 48px;
+  color: #4caf50;
+  margin-bottom: 12px;
+}
+
+.success-header h3 {
+  color: #333;
+  margin: 0;
+}
+
+.voucher-details {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.voucher-details .amount {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.voucher-details .expires {
+  color: #666;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.share-section {
+  margin-bottom: 24px;
+}
+
+.link-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.link-box input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.copy-btn {
+  padding: 0 16px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.copy-btn:hover {
+  background: #d63650;
+}
+
+.share-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.qr-code-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.password-reminder {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.info-section h4 {
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.info-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-section li {
+  padding: 8px 0;
+  padding-left: 24px;
+  position: relative;
+  color: #666;
+}
+
+.info-section li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4caf50;
+  font-weight: bold;
+}

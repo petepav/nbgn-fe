@@ -9,7 +9,7 @@ A complete implementation of a production-ready React Web3 application with Type
 
 - ✅ **TypeScript Support** - Full type safety for Web3 interactions
 - ✅ **Web3 Integration** - ethers.js with WalletConnect support
-- ✅ **Multi-language Support** - i18n with English, Spanish, and Chinese
+- ✅ **Multi-language Support** - i18n with English and Bulgarian
 - ✅ **State Management** - React Context API with performance optimizations
 - ✅ **Smart Contract Hooks** - Reusable hooks for contract interactions
 - ✅ **Transaction Management** - Complete transaction lifecycle handling

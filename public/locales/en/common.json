@@ -11,6 +11,11 @@
   "delete": "Delete",
   "adding": "Adding...",
   "connectFirst": "Connect your wallet to get started",
+  "copy": "Copy",
+  "copied": "Copied!",
+  "share": "Share",
+  "or": "OR",
+  "goHome": "Go Home",
   "monerium": {
     "title": "Important: How to Buy/Sell EURe",
     "description": "To buy NBGN, you need EURe. However, EURe has limited liquidity on Arbitrum DEXes, making USDC<>EURe swaps expensive. We recommend using Monerium (monerium.app) directly: After KYC/AML verification (up to 24 hours), Monerium allows you to buy and sell EURe for real euros at 0% fee via bank transfer. Monerium is a trusted, regulated service maintaining a hard 1:1 EUR/EURe peg. Note: We are not affiliated with Monerium - this recommendation is based on our own research. This is not financial advice.",

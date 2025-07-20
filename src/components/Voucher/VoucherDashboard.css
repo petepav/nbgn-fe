@@ -1,0 +1,186 @@
+.voucher-dashboard {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h3 {
+  margin: 0;
+  color: #1a1a2e;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.refresh-btn:hover {
+  background: #f5f5f5;
+  color: #e94560;
+}
+
+.connect-message,
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.connect-message i,
+.loading i,
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state .sub-text {
+  font-size: 14px;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.voucher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voucher-item {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s;
+}
+
+.voucher-item:hover {
+  border-color: #e94560;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.1);
+}
+
+.voucher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.voucher-header .amount {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.claimed {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-badge.expired {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.voucher-info {
+  margin-bottom: 12px;
+}
+
+.voucher-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.claimed-info {
+  font-family: monospace;
+}
+
+.voucher-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn:hover {
+  background: #e94560;
+  color: white;
+}
+
+.action-btn.cancel-btn {
+  background: #fee;
+  color: #d00;
+}
+
+.action-btn.cancel-btn:hover {
+  background: #d00;
+  color: white;
+}
+
+.action-btn.delete-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.action-btn.delete-btn:hover {
+  background: #666;
+  color: white;
+}
+
+.error-message {
+  background: #fee;
+  color: #d00;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
