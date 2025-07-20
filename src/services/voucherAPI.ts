@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 // Always use the full URL - backend should handle CORS
-// NOTE: Production HTTPS sites cannot make HTTP requests (Mixed Content error)
-// Ask Molly to provide HTTPS endpoint or use a proxy
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://207.154.215.37:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://207.154.215.37:8080';
 
 export interface CreateVoucherLinkRequest {
   voucher_id: string;
