@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import styles from './BottomNavigation.module.css';
 
 interface BottomNavigationProps {
-  activeWidget: 'send' | 'trade' | 'history' | 'voucher';
+  activeWidget: 'send' | 'trade' | 'history'; // | 'voucher';
   // eslint-disable-next-line no-unused-vars
-  onWidgetChange: (widget: 'send' | 'trade' | 'history' | 'voucher') => void;
+  onWidgetChange: (widget: 'send' | 'trade' | 'history') => void; // | 'voucher') => void;
   selectedToken: string;
 }
 
@@ -59,7 +59,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           </span>
         </button>
 
-        <button
+        {/* <button
           onClick={() => onWidgetChange('voucher')}
           className={`${styles.navButton} ${activeWidget === 'voucher' ? `${styles.active} ${styles.voucher}` : ''}`}
           aria-label={t('web3:voucher.title', 'Voucher')}
@@ -71,7 +71,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <span className={styles.label}>
             {t('web3:voucher.title', 'Voucher')}
           </span>
-        </button>
+        </button> */}
       </div>
     </nav>
   );

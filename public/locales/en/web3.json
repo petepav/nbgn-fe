@@ -6,7 +6,7 @@
     "disconnect": "Disconnect",
     "error": "Failed to connect wallet",
     "connectTitle": "Connect Your Wallet",
-    "connectDescription": "Connect your wallet to start using NBGN vouchers",
+    "connectDescription": "Connect your wallet to start using NBGN",
     "connectWallet": "Connect Wallet",
     "wrongNetwork": "Please switch to Arbitrum One",
     "networkInfo": "This app works on Arbitrum One network"
@@ -67,8 +67,8 @@
   },
   "trade": {
     "title": "Trade"
-  },
-  "voucher": {
+  }
+  /* "voucher": {
     "title": "NBGN Vouchers",
     "description": "Send NBGN to anyone, even without a wallet!",
     "betaTitle": "Beta Feature",
@@ -132,5 +132,5 @@
     "ethTooLowForGas": "ETH balance too low to cover gas fees",
     "ethRecoveryError": "Failed to recover ETH",
     "ethReturnedToCreator": "Remaining ETH ({{amount}} ETH) was returned to the voucher creator"
-  }
+  } */
 }

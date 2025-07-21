@@ -57,9 +57,9 @@
   background: linear-gradient(135deg, #6b7280, #4b5563);
 }
 
-.navButton.active.voucher {
+/* .navButton.active.voucher {
   background: linear-gradient(135deg, #10b981, #059669);
-}
+} */
 
 .iconWrapper {
   display: flex;
