@@ -35,7 +35,7 @@
     "token": "{{token}} Баланс"
   },
   "exchange": {
-    "title": "Купи лев (с евро)",
+    "title": "Купи NBGN (с EURe)",
     "shortTitle": "Купи",
     "eurcBalance": "EURe Баланс",
     "eurcAmount": "EURe Сума",
@@ -50,7 +50,7 @@
     "rate": "Обменен курс"
   },
   "redeem": {
-    "title": "Продай лев (за евро)",
+    "title": "Продай NBGN (за EURe)",
     "shortTitle": "Продай",
     "nbgnBalance": "NBGN Баланс",
     "eurcBalance": "EURe Баланс",
