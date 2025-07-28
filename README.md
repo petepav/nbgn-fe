@@ -3,6 +3,12 @@
 Discord server chat
 https://discord.gg/PQpW9CXDYp
 
+## To run
+
+```
+npm install --force
+```
+
 A complete implementation of a production-ready React Web3 application with TypeScript, ethers.js, multi-language support, and Vercel deployment setup.
 
 ## Features
