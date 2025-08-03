@@ -342,6 +342,26 @@ export const AppContent: React.FC = () => {
               <i className="fab fa-github mr-2"></i>
               Contracts
             </a>
+            <a
+              href="https://github.com/pete-fathom/nbgn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              <i className="fab fa-github mr-2"></i>
+              Contracts
+            </a>
+          </div>
+          <div>
+            <br />
+            <a
+              href="https://arbiscan.io/token/0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="TokenInfoExplainer_link__ZkIuM"
+            >
+              NBGN Token
+            </a>
           </div>
         </div>
       </footer>
