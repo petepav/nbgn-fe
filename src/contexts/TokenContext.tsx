@@ -309,7 +309,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
 
       try {
         // @ts-ignore - ethereum provider types
-        await web3.provider.provider.request({
+        await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: targetChainId }],
         });
@@ -319,7 +319,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
           try {
             const networkParams = getNetworkParams(config.chainId);
             // @ts-ignore - ethereum provider types
-            await web3.provider.provider.request({
+            await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [networkParams],
             });
