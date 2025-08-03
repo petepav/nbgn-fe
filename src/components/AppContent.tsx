@@ -344,15 +344,6 @@ export const AppContent: React.FC = () => {
               <i className="fab fa-github mr-2"></i>
               Contracts
             </a>
-            <a
-              href="https://github.com/pete-fathom/nbgn"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-link"
-            >
-              <i className="fab fa-github mr-2"></i>
-              Contracts
-            </a>
           </div>
           <div>
             <br />
