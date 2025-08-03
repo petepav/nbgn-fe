@@ -60,12 +60,13 @@ export const AppContent: React.FC = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            //justifyContent: 'center',
             //gap: '20px',
             //marginBottom: '32px',
             //marginTop: '60px',
             //paddingTop: '20px',
             marginTop: '-10px',
+            width: '100%',
           }}
         >
           <img
@@ -79,7 +80,8 @@ export const AppContent: React.FC = () => {
           />
           <h1
             style={{
-              fontSize: '56px',
+              //fontSize: '56px',
+              fontSize: '50px',
               fontWeight: '900',
               background: 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
               WebkitBackgroundClip: 'text',
