@@ -61,10 +61,11 @@ export const AppContent: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '20px',
-            marginBottom: '32px',
-            marginTop: '60px',
-            paddingTop: '20px',
+            //gap: '20px',
+            //marginBottom: '32px',
+            //marginTop: '60px',
+            //paddingTop: '20px',
+            marginTop: '-10px',
           }}
         >
           <img
