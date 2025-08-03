@@ -17,6 +17,8 @@ import { useAppState } from '../contexts/AppContext';
 import { useTokenContext } from '../contexts/TokenContext';
 import { BottomNavigation } from './BottomNavigation';
 
+import styles from './TokenInfoExplainer/TokenInfoExplainer.module.css';
+
 export const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAppState();
@@ -358,7 +360,7 @@ export const AppContent: React.FC = () => {
               href="https://arbiscan.io/token/0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067"
               target="_blank"
               rel="noopener noreferrer"
-              className="TokenInfoExplainer_link__ZkIuM"
+              className={styles.link}
             >
               NBGN Token
             </a>
