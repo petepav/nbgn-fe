@@ -8,7 +8,10 @@ interface TransactionStatusProps {
   onClose?: () => void;
 }
 
-export const TransactionStatus: React.FC<TransactionStatusProps> = ({ hash, onClose }) => {
+export const TransactionStatus: React.FC<TransactionStatusProps> = ({
+  hash,
+  onClose,
+}) => {
   const { t } = useTranslation();
   const status = useTransactionStatus(hash);
 
@@ -48,21 +51,27 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({ hash, onCl
           <p className="status-text">{getStatusText()}</p>
           {status.confirmations > 0 && (
             <p className="confirmations">
-              {t('transaction.confirmations', '{{count}} confirmations', { count: status.confirmations })}
+              {t('transaction.confirmations', '{{count}} confirmations', {
+                count: status.confirmations,
+              })}
             </p>
           )}
-          <a
-            href={`https://arbiscan.io/tx/${hash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() =>
+              window.open(`https://arbiscan.io/tx/${hash}`, '_blank')
+            }
             className="tx-link"
           >
             {t('transaction.viewOnExplorer', 'View on Arbiscan')}
-          </a>
+          </button>
         </div>
       </div>
       {onClose && (
-        <button onClick={onClose} className="close-btn" aria-label={t('common.close', 'Close')}>
+        <button
+          onClick={onClose}
+          className="close-btn"
+          aria-label={t('common.close', 'Close')}
+        >
           <i className="fas fa-times"></i>
         </button>
       )}
