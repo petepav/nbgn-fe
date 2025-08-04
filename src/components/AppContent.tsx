@@ -316,7 +316,7 @@ export const AppContent: React.FC = () => {
                   ></i>
                 </button>
                 <a
-                  href="https://arbiscan.io/address/0x2844ee586336982fd6F20345f8eA0236608bc3E8"
+                  href="https://arbiscan.io/address/0x2844ee586336982fd6F20345f8eA0236608bc3E8#tokentxns"
                   target="_blank"
                   style={{
                     display: 'inline-flex',
