@@ -274,7 +274,7 @@ export const AppContent: React.FC = () => {
                   background: '#f8f9fa',
                   padding: '6px 12px',
                   borderRadius: '8px',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontFamily: 'monospace',
                 }}
               >
@@ -315,6 +315,23 @@ export const AppContent: React.FC = () => {
                     className={addressCopied ? 'fas fa-check' : 'fas fa-copy'}
                   ></i>
                 </button>
+                <a
+                  href="https://arbiscan.io/address/0x2844ee586336982fd6F20345f8eA0236608bc3E8"
+                  target="_blank"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#f8f9fa',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontFamily: 'monospace',
+                    marginLeft: '-10px',
+                  }}
+                >
+                  <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
               </div>
             </div>
           </div>
