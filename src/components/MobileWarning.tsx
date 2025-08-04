@@ -18,7 +18,7 @@ export const MobileWarning: React.FC = () => {
 
       // Check if it's a mobile device based on screen width and user agent
       const isMobileDevice =
-        screenWidth <= 768 ||
+        //screenWidth <= 768 ||
         /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
           userAgent
         );
