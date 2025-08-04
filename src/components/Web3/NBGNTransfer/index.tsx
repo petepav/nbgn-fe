@@ -159,7 +159,7 @@ export const NBGNTransfer: React.FC<NBGNTransferProps> = ({
               value={recipient}
               onChange={e => setRecipient(e.target.value)}
               placeholder="0x..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 address-input"
               required
             />
             <div

@@ -940,6 +940,11 @@ button {
   .disclaimer-section h2 {
     font-size: 18px;
   }
+  
+  input[type="text"].address-input {
+	font-size: 11.5px;
+	font-family: monospace;
+  }
 }
 
 /* Info Page */
