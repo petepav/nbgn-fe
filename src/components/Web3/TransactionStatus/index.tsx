@@ -12,11 +12,16 @@ export const TransactionStatus: React.FC<Props> = ({ status, hash, error }) => {
 
   const getStatusColor = () => {
     switch (status) {
-      case 'pending': return '#FFA500';
-      case 'submitted': return '#1E90FF';
-      case 'confirmed': return '#32CD32';
-      case 'failed': return '#DC143C';
-      default: return '#808080';
+      case 'pending':
+        return '#FFA500';
+      case 'submitted':
+        return '#1E90FF';
+      case 'confirmed':
+        return '#32CD32';
+      case 'failed':
+        return '#DC143C';
+      default:
+        return '#808080';
     }
   };
 
@@ -29,18 +34,21 @@ export const TransactionStatus: React.FC<Props> = ({ status, hash, error }) => {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600"></div>
         )}
         <div className="flex-1">
-          <p className="text-yellow-800 font-medium" style={{ color: getStatusColor() }}>
+          <p
+            className="text-yellow-800 font-medium"
+            style={{ color: getStatusColor() }}
+          >
             {t(`transaction.${status}`)}
           </p>
           {hash && (
-            <a 
-              href={`https://arbiscan.io/tx/${hash}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() =>
+                window.open(`https://arbiscan.io/tx/${hash}`, '_blank')
+              }
               className="text-yellow-600 hover:text-yellow-700 text-sm underline mt-1 inline-block"
             >
               View on Arbiscan
-            </a>
+            </button>
           )}
           {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
         </div>
