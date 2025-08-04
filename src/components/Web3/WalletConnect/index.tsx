@@ -107,8 +107,8 @@ export const WalletConnect: React.FC = () => {
 
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <p className="address text-sm font-mono">
-                    {user.address.substring(0, 6)}...
-                    {user.address.substring(38)}
+                    {user.address.substring(0, 15)}...
+                    {user.address.substring(30)}
                   </p>
                   <button
                     onClick={copyAddress}
