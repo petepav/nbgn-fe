@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import styles from './TokenInfoExplainer/TokenInfoExplainer.module.css';
 
 export const MobileWarning: React.FC = () => {
+  const { t } = useTranslation();
   const [showWarning, setShowWarning] = useState(false);
   // eslint-disable-next-line no-undef
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -55,8 +59,16 @@ export const MobileWarning: React.FC = () => {
           <strong>Мобилно устройство</strong>
           <p>
             За да използвате платформата на мобилно устройство, моля отворете
-            този сайт от <strong>вградения браузър на MetaMask</strong>.
+            този сайт от <strong>вградения браузър на MetaMask</strong>
           </p>
+          <a
+            href={`https://metamask.app.link/dapp/${window.location.host}`}
+            target="_blank"
+            className={styles.addButton}
+            style={{ margin: '15px' }}
+          >
+            {t('tokenInfo.openInMetaMask')}
+          </a>
           <p className="mobile-warning-steps">
             1. Отворете MetaMask приложението
             <br />
