@@ -50,9 +50,9 @@ export const MobileWarning: React.FC = () => {
   return (
     <div className="mobile-warning">
       <div className="mobile-warning-content">
-        <i className="fas fa-mobile-alt mr-2"></i>
         <div className="mobile-warning-text">
-          <strong>📱 Мобилно устройство</strong>
+          <i className="fas fa-mobile-alt mr-2"></i>
+          <strong>Мобилно устройство</strong>
           <p>
             За да използвате платформата на мобилно устройство, моля отворете
             този сайт от <strong>вградения браузър на MetaMask</strong>.
