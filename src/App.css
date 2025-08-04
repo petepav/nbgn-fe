@@ -52,6 +52,7 @@ body {
   border-right: 4px solid var(--bg-red);
   box-shadow: 0 0 50px var(--shadow-light);
   padding-bottom: 20px;
+  padding: 20px;
 }
 
 /* Bulgarian flag accent strip */
