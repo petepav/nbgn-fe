@@ -148,7 +148,9 @@ export const TokenRedeem: React.FC = () => {
               className="form-input"
               value={tokenAmount}
               onChange={e => {
-                const value = e.target.value;
+                let value = e.target.value;
+                // Replace comma with decimal point for mobile users
+                value = value.replace(',', '.');
                 // Allow typing decimal numbers
                 if (value === '' || /^\d*\.?\d*$/.test(value)) {
                   // Remove leading zeros unless it's "0" or "0."
