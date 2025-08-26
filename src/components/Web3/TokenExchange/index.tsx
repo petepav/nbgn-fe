@@ -468,7 +468,7 @@ export const TokenExchange: React.FC = () => {
     } else if (selectedToken === 'DBGN') {
       return `Купи ${tokenConfig.symbol} (с долари)`;
     } else if (selectedToken === 'GBGN') {
-      return `Купи ${tokenConfig.symbol} (със злато)`;
+      return `Купи ${tokenConfig.symbol}`;
     }
     return `Buy ${tokenConfig.symbol} with ${tokenConfig.stableTokenSymbol}`;
   };
