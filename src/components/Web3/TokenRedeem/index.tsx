@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import { useAppState } from '../../../contexts/AppContext';
@@ -19,6 +19,8 @@ export const TokenRedeem: React.FC = () => {
   const [tokenAmount, setTokenAmount] = useState('');
   const [expectedStableAmount, setExpectedStableAmount] = useState('0');
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isAdjustingRef = useRef(false);
 
   // Calculate expected stable token amount when token amount changes
   useEffect(() => {
@@ -72,15 +74,28 @@ export const TokenRedeem: React.FC = () => {
   };
 
   const adjustAmount = (delta: number) => {
-    const currentAmount = parseFloat(tokenAmount) || 0;
+    // Set flag to prevent onBlur from interfering
+    isAdjustingRef.current = true;
+
+    // Get the current value directly from state
+    const currentValue = tokenAmount || '0';
+    const currentAmount =
+      currentValue === '' ? 0 : parseFloat(currentValue) || 0;
     const newAmount = Math.max(0, currentAmount + delta);
     const maxBalance = parseFloat(rawBalance) || 0;
 
-    if (newAmount <= maxBalance) {
+    if (newAmount === 0) {
+      setTokenAmount('');
+    } else if (newAmount <= maxBalance) {
       setTokenAmount(newAmount.toFixed(2));
     } else {
       setTokenAmount(maxBalance.toFixed(2));
     }
+
+    // Reset flag after a short delay
+    window.setTimeout(() => {
+      isAdjustingRef.current = false;
+    }, 100);
   };
 
   // Format stable token with appropriate decimals
@@ -128,13 +143,41 @@ export const TokenRedeem: React.FC = () => {
           </label>
           <div className="input-with-max">
             <input
-              type="number"
+              ref={inputRef}
+              type="text"
               className="form-input"
               value={tokenAmount}
-              onChange={e => setTokenAmount(e.target.value)}
+              onChange={e => {
+                const value = e.target.value;
+                // Allow typing decimal numbers
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  // Remove leading zeros unless it's "0" or "0."
+                  let cleanValue = value;
+                  if (
+                    value.length > 1 &&
+                    value[0] === '0' &&
+                    value[1] !== '.'
+                  ) {
+                    cleanValue = value.substring(1);
+                  }
+                  setTokenAmount(cleanValue);
+                }
+              }}
+              onBlur={e => {
+                // Skip onBlur if we're adjusting via buttons
+                if (isAdjustingRef.current) return;
+
+                const value = parseFloat(e.target.value);
+                if (!isNaN(value) && value > 0) {
+                  const maxBalance = parseFloat(rawBalance) || 0;
+                  const rounded = Math.min(value, maxBalance);
+                  setTokenAmount(rounded.toFixed(2));
+                } else if (e.target.value === '') {
+                  setTokenAmount('');
+                }
+              }}
               placeholder="0.00"
-              min="0"
-              step="0.01"
+              inputMode="decimal"
               disabled={isRedeeming}
             />
             <button
@@ -161,7 +204,21 @@ export const TokenRedeem: React.FC = () => {
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(-1)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-5);
+                }}
+                className="preset-button-subtract"
+                title={`Subtract 5 ${tokenConfig.symbol}`}
+              >
+                -5
+              </button>
+              <button
+                type="button"
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-1);
+                }}
                 className="preset-button-subtract"
                 title={`Subtract 1 ${tokenConfig.symbol}`}
               >
@@ -169,7 +226,10 @@ export const TokenRedeem: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.5);
+                }}
                 className="preset-button-subtract"
                 title={`Subtract 0.5 ${tokenConfig.symbol}`}
               >
@@ -177,7 +237,10 @@ export const TokenRedeem: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.05)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.05);
+                }}
                 className="preset-button-subtract"
                 title={`Subtract 0.05 ${tokenConfig.symbol}`}
               >
@@ -187,7 +250,10 @@ export const TokenRedeem: React.FC = () => {
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(0.05)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(0.05);
+                }}
                 className="preset-button-add"
                 title={`Add 0.05 ${tokenConfig.symbol}`}
               >
@@ -195,7 +261,10 @@ export const TokenRedeem: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(0.5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(0.5);
+                }}
                 className="preset-button-add"
                 title={`Add 0.5 ${tokenConfig.symbol}`}
               >
@@ -203,11 +272,25 @@ export const TokenRedeem: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(1)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(1);
+                }}
                 className="preset-button-add"
                 title={`Add 1 ${tokenConfig.symbol}`}
               >
                 +1
+              </button>
+              <button
+                type="button"
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(5);
+                }}
+                className="preset-button-add"
+                title={`Add 5 ${tokenConfig.symbol}`}
+              >
+                +5
               </button>
             </div>
           </div>
