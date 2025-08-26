@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import { useAppState } from '../../../contexts/AppContext';
@@ -25,9 +31,11 @@ export const TokenExchange: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isAdjustingRef = useRef(false);
 
   // Get the appropriate stable token ABI
-  const getStableTokenABI = useCallback(() => {
+  const getStableTokenABI = useMemo(() => {
     if (tokenConfig.stableTokenSymbol === 'EURe') return EURE_ABI;
     if (
       tokenConfig.stableTokenSymbol === 'EURC' ||
@@ -56,7 +64,7 @@ export const TokenExchange: React.FC = () => {
       const signer = await web3.provider.getSigner();
       return new ethers.Contract(
         tokenConfig.stableTokenAddress,
-        getStableTokenABI(),
+        getStableTokenABI,
         signer
       );
     } catch (error) {
@@ -110,10 +118,9 @@ export const TokenExchange: React.FC = () => {
     user.address,
     web3.provider,
     selectedToken,
-    getContract,
-    getStableTokenContract,
     tokenConfig.address,
     tokenConfig.stableTokenSymbol,
+    // Removed unstable dependencies: getContract, getStableTokenContract
   ]);
 
   // Calculate expected token amount when stable amount changes
@@ -399,9 +406,22 @@ export const TokenExchange: React.FC = () => {
   };
 
   const adjustAmount = (delta: number) => {
-    const currentAmount = parseFloat(stableAmount) || 0;
+    // Set flag to prevent onBlur from interfering
+    isAdjustingRef.current = true;
+
+    // Get the current value directly from state or input
+    const currentValue = stableAmount || '0';
+    console.log('Current value:', currentValue);
+    console.log('Delta:', delta);
+
+    // Parse the current amount
+    const currentAmount =
+      currentValue === '' ? 0 : parseFloat(currentValue) || 0;
     const newAmount = Math.max(0, currentAmount + delta);
     const maxBalance = parseFloat(stableBalance) || 0;
+
+    console.log('Parsed current amount:', currentAmount);
+    console.log('Calculated new amount:', newAmount);
 
     // Use appropriate buffer based on token
     let buffer = 0;
@@ -413,15 +433,33 @@ export const TokenExchange: React.FC = () => {
       buffer = 0.01;
     }
 
-    if (newAmount <= maxBalance - buffer) {
+    if (newAmount === 0) {
+      console.log('Setting amount to empty string');
+      setStableAmount('');
+    } else if (newAmount <= maxBalance - buffer || maxBalance === 0) {
       // Format with appropriate decimals
       const decimals = tokenConfig.stableTokenSymbol === 'PAXG' ? 6 : 2;
       const formatted = newAmount.toFixed(decimals);
+      console.log('Setting amount to:', formatted);
       setStableAmount(formatted);
     } else {
-      // Use the same logic as handleMaxAmount for consistency
-      handleMaxAmount();
+      // Set to max amount
+      const balance = parseFloat(stableBalance);
+      if (isNaN(balance) || balance === 0) {
+        setStableAmount('0');
+      } else {
+        const safeBalance = balance > buffer ? balance - buffer : balance;
+        const decimals = tokenConfig.stableTokenSymbol === 'PAXG' ? 6 : 2;
+        const formatted = safeBalance.toFixed(decimals);
+        console.log('Amount exceeds balance, setting to max:', formatted);
+        setStableAmount(formatted);
+      }
     }
+
+    // Reset flag after a short delay
+    window.setTimeout(() => {
+      isAdjustingRef.current = false;
+    }, 100);
   };
 
   const getExchangeTitle = () => {
@@ -458,15 +496,36 @@ export const TokenExchange: React.FC = () => {
           </label>
           <div className="input-with-max">
             <input
-              type="number"
+              ref={inputRef}
+              type="text"
               className="form-input"
               value={stableAmount}
               onChange={e => {
                 const value = e.target.value;
-                // Allow user to type, but validate on blur
-                setStableAmount(value);
+                // Allow typing decimal numbers, removing leading zeros
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  // Remove leading zeros unless it's "0" or "0."
+                  let cleanValue = value;
+                  if (
+                    value.length > 1 &&
+                    value[0] === '0' &&
+                    value[1] !== '.'
+                  ) {
+                    cleanValue = value.substring(1);
+                  }
+                  setStableAmount(cleanValue);
+                }
+              }}
+              onFocus={e => {
+                // Clear the field if it's just "0"
+                if (e.target.value === '0' || e.target.value === '0.00') {
+                  setStableAmount('');
+                }
               }}
               onBlur={e => {
+                // Skip onBlur if we're adjusting via buttons
+                if (isAdjustingRef.current) return;
+
                 const value = parseFloat(e.target.value);
                 if (!isNaN(value) && value > 0) {
                   // Round to 2 decimals and ensure not exceeding balance with buffer
@@ -482,8 +541,7 @@ export const TokenExchange: React.FC = () => {
                 }
               }}
               placeholder="0.00"
-              min="0"
-              step="0.01"
+              inputMode="decimal"
               disabled={loading || isApproving || isMinting}
             />
             <button
@@ -503,7 +561,10 @@ export const TokenExchange: React.FC = () => {
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(-5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-5);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-subtract"
                 title={`Subtract 5 ${tokenConfig.stableTokenSymbol}`}
@@ -512,7 +573,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-1)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-1);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-subtract"
                 title={`Subtract 1 ${tokenConfig.stableTokenSymbol}`}
@@ -521,7 +585,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.5);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-subtract"
                 title={`Subtract 0.5 ${tokenConfig.stableTokenSymbol}`}
@@ -530,7 +597,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(-0.05)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(-0.05);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-subtract"
                 title={`Subtract 0.05 ${tokenConfig.stableTokenSymbol}`}
@@ -541,7 +611,10 @@ export const TokenExchange: React.FC = () => {
             <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => adjustAmount(0.05)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(0.05);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-add"
                 title={`Add 0.05 ${tokenConfig.stableTokenSymbol}`}
@@ -550,7 +623,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(0.5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(0.5);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-add"
                 title={`Add 0.5 ${tokenConfig.stableTokenSymbol}`}
@@ -559,7 +635,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(1)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(1);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-add"
                 title={`Add 1 ${tokenConfig.stableTokenSymbol}`}
@@ -568,7 +647,10 @@ export const TokenExchange: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => adjustAmount(5)}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  adjustAmount(5);
+                }}
                 disabled={loading || isApproving || isMinting}
                 className="preset-button-add"
                 title={`Add 5 ${tokenConfig.stableTokenSymbol}`}
