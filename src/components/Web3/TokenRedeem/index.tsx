@@ -115,7 +115,7 @@ export const TokenRedeem: React.FC = () => {
     } else if (selectedToken === 'DBGN') {
       return `Продай ${tokenConfig.symbol} (за долари)`;
     } else if (selectedToken === 'GBGN') {
-      return `Продай ${tokenConfig.symbol} (за злато)`;
+      return `Продай ${tokenConfig.symbol}`;
     }
     return `Sell ${tokenConfig.symbol} for ${tokenConfig.stableTokenSymbol}`;
   };
