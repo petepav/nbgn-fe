@@ -530,19 +530,30 @@ export const TokenExchange: React.FC = () => {
 
                 const value = parseFloat(e.target.value);
                 if (!isNaN(value) && value > 0) {
-                  // Round to 2 decimals and ensure not exceeding balance with buffer
+                  // Use appropriate decimals based on token type
+                  const decimals =
+                    tokenConfig.stableTokenSymbol === 'PAXG' ? 6 : 2;
                   const maxBalance = parseFloat(stableBalance) || 0;
-                  const safeMax = Math.floor((maxBalance - 0.02) * 100) / 100;
-                  const rounded = Math.min(
-                    Math.floor(value * 100) / 100,
-                    safeMax
-                  );
-                  setStableAmount(Math.max(0, rounded).toFixed(2));
+
+                  // Use appropriate buffer based on token
+                  let buffer = 0.02;
+                  if (tokenConfig.stableTokenSymbol === 'PAXG') {
+                    buffer = 0.0001;
+                  }
+
+                  const safeMax = maxBalance - buffer;
+                  const rounded = Math.min(value, safeMax);
+
+                  // Format with appropriate decimal places
+                  const formatted = Math.max(0, rounded).toFixed(decimals);
+                  setStableAmount(formatted);
                 } else if (e.target.value === '') {
                   setStableAmount('');
                 }
               }}
-              placeholder="0.00"
+              placeholder={
+                tokenConfig.stableTokenSymbol === 'PAXG' ? '0.000000' : '0.00'
+              }
               inputMode="decimal"
               disabled={loading || isApproving || isMinting}
             />
