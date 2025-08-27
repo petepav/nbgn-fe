@@ -52,9 +52,14 @@ export const InfoPage: React.FC = () => {
                   </li>
                   <li>
                     <strong>Адрес:</strong>{' '}
-                    <code style={{ fontSize: '12px' }}>
+                    <a
+                      href="https://arbiscan.io/address/0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '12px', wordBreak: 'break-all' }}
+                    >
                       0x47F9CF7043C8A059f82a988C0B9fF73F0c3e6067
-                    </code>
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -87,9 +92,14 @@ export const InfoPage: React.FC = () => {
                   </li>
                   <li>
                     <strong>Адрес:</strong>{' '}
-                    <code style={{ fontSize: '12px' }}>
+                    <a
+                      href="https://arbiscan.io/address/0x4922fafB060C89E0B1A22339f3e52dA4f6e0f980"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '12px', wordBreak: 'break-all' }}
+                    >
                       0x4922fafB060C89E0B1A22339f3e52dA4f6e0f980
-                    </code>
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -121,7 +131,15 @@ export const InfoPage: React.FC = () => {
                     злато)
                   </li>
                   <li>
-                    <strong>Адрес:</strong> <em>Предстои внедряване</em>
+                    <strong>Адрес:</strong>{' '}
+                    <a
+                      href="https://etherscan.io/address/0xe2b6ba86ce0e1d529833540bb510dce4770c8e1c"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '12px', wordBreak: 'break-all' }}
+                    >
+                      0xe2b6ba86ce0e1d529833540bb510dce4770c8e1c
+                    </a>
                   </li>
                 </ul>
               </div>
