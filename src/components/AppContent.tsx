@@ -200,9 +200,9 @@ export const AppContent: React.FC = () => {
           <p className="disclaimer-short">
             ⚠️ NBGN е частен токен, няма връзка с БНБ или официалната валута.
             Участието е изцяло на собствен риск.
-            <a href="/disclaimer" className="disclaimer-link">
+            <Link to="/disclaimer" className="disclaimer-link">
               Виж пълния дисклеймър тук. 🔗
-            </a>
+            </Link>
           </p>
 
           <div
